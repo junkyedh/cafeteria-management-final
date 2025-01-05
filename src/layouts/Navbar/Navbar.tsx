@@ -8,83 +8,75 @@ const routePath = [
   { 
     icon: "fa-solid fa-chart-line",
     title: "THỐNG KÊ",
-    url: "/dashboard",
+    link: "/dashboard",
     roles: ["ROLE_ADMIN"]
   },
   {
     icon: "fa-solid fa-list",
     title: "ĐẶT HÀNG",
-    url: "/order",
+    link: "/order",
     roles: ["ROLE_ADMIN", "ROLE_STAFF"],
     children:[
       {
         icon: "fa-solid fa-mug-saucer",
         title: "CHỌN BÀN",
-        url: "/order/choose-table",
+        link: "choose-table",
         roles: ["ROLE_ADMIN", "ROLE_STAFF"]
       },
       {
         icon: "fa-solid fa-cart-plus",
         title: "GỌI MÓN",
-        url: "/order/booking",
+        link: "booking",
         roles: ["ROLE_ADMIN", "ROLE_STAFF"]
       },
       {
         icon: "fa-solid fa-clipboard-list",
-        title: "DANH SÁCH ĐƠN HÀNG",
-        url: "/order/orders-list",
+        title: "ĐƠN HÀNG",
+        link: "orders-list",
         roles: ["ROLE_ADMIN", "ROLE_STAFF"]
       },
       {
         icon: "fa-solid fa-cash-register",
-        title: "LỊCH SỬ THANH TOÁN",
-        url: "/order/payment",
+        title: "THANH TOÁN",
+        link: "payment",
         roles: ["ROLE_ADMIN", "ROLE_STAFF"]
       }
     ]
   },
   {
     icon: "fa-solid fa-list",
-    title: "QUẢN LÝ SẢN PHẨM",
-    url: "/manageProduct",
+    title: "QUẢN LÝ DANH SÁCH",
+    link: "/manage-list",
     roles: ["ROLE_ADMIN"],
     children:[
       {
         icon: "fa-solid fa-martini-glass",
-        title: "DANH SÁCH SẢN PHẨM",
-        url: "/manageProduct/product-list",
+        title: "SẢN PHẨM",
+        link: "product",
         roles: ["ROLE_ADMIN"]
       },
       {
         icon: "fa-solid fa-box",
-        title: "DANH SÁCH NGUYÊN LIỆU",
-        url: "/manageProduct/material-list",
+        title: "NGUYÊN LIỆU",
+        link: "material",
         roles: ["ROLE_ADMIN"]
       },
       {
         icon: "fa-solid fa-ticket",
         title: "VOUCHER & COUPON",
-        url: "/voucher-list",
+        link: "voucher",
         roles: ["ROLE_ADMIN"]
       },
-    ]
-  },
-  {
-    icon: "fa-solid fa-list",
-    title: "QUẢN LÝ ĐỐI TƯỢNG NGƯỜI DÙNG",
-    url: "/customer-list",
-    roles: ["ROLE_ADMIN", "ROLE_STAFF"],
-    children:[
       {
         icon: "fa-solid fa-users",
-        title: "DANH SÁCH KHÁCH HÀNG",
-        url: "/customer-list",
+        title: "KHÁCH HÀNG",
+        link: "customer",
         roles: ["ROLE_ADMIN", "ROLE_STAFF"]
       },
       {
         icon: "fa-regular fa-rectangle-list",
-        title: "DANH SÁCH NHÂN VIÊN",
-        url: "/staff-list",
+        title: "NHÂN VIÊN",
+        link: "staff",
         roles: ["ROLE_ADMIN"]
       },
     ]
@@ -92,7 +84,7 @@ const routePath = [
   {
     icon: "fa-solid fa-user",
     title: "THÔNG TIN NHÂN VIÊN",
-    url: "/staff-info",
+    link: "/staff-info",
     roles: ["ROLE_ADMIN", "ROLE_STAFF"]
   }
 ];
@@ -125,22 +117,24 @@ const Navbar: React.FC = () => {
 
   const renderNavigationList = () => {
     return routePath.map((route, index) => {
-      if (route.url === "*") return null;
+      if (route.link === "*") return null;
       
       const hasChildren = route.children && route.children.length > 0;
-      const isActive = comparePathname(route.url, currentPath);
-      const isOpen = openSubRoutes[route.url];
+      const isActive = comparePathname(route.link ?? "", currentPath);
+      const isOpen = openSubRoutes[route.link ?? ""];
 
       return (
         <li key={index} className={`nav-item ${hasChildren ? "dropdown" : ""}`}>
           <Link
-            to={hasChildren ? "#" : route.url}
+            to={hasChildren ? "#" : route.link ?? "#"}
             className={`nav-link ${isActive ? "nav-link-active" : ""}`}
             onClick={
               hasChildren
                 ? (e) => {
                     e.preventDefault();
-                    toggleSubRoutes(route.url);
+                    if (route.link) {
+                      toggleSubRoutes(route.link);
+                    }
                   }
                 : undefined
             }
@@ -162,10 +156,10 @@ const Navbar: React.FC = () => {
               {route.children.map((subRoute, subIndex) => (
                 <li key={subIndex} className="nav-item">
                   <Link
-                    to={`${route.url}/${subRoute.url}`} 
+                    to={`${route.link}/${subRoute.link}`} 
                     className={`nav-link ${
                       comparePathname(
-                        `${route.url}/${subRoute.url}`,
+                        `${route.link}/${subRoute.link}`,
                         currentPath
                       )
                         ? "nav-link-active"
@@ -177,7 +171,7 @@ const Navbar: React.FC = () => {
                     </span>
                     <span className={`title ${
                       comparePathname(
-                        `${route.url}/${subRoute.url}`,
+                        `${route.link}/${subRoute.link}`,
                         currentPath
                       )
                         ? "title-active"

@@ -1,14 +1,15 @@
 @import "../../scss/_variables.scss"; 
 
 .navbar {
-  padding: 0;
+  padding: 10px 0;
 
 
   .menuList {
     background-color: get-color($background, "100"); 
-    width: 250px; 
+    width: 330px; 
     height: 100vh; 
     list-style: none;
+    margin-left: 10px;
   }
   .logo {
     font-family: $font-family;
@@ -34,7 +35,12 @@
   .nav-item {
     margin-inline: 6px;
     padding: 5px;
+    padding-left: 10px;
     width: 100%;
+    
+    &.nav-item-active {
+      font-weight: bold;
+    }
 
     .nav-link {
       padding: 10px 10px;
@@ -51,6 +57,7 @@
 
       &.nav-link-active {
         background-color: get-color($primary,"100"); 
+        color: get-color($neutral, "100");
       }
 
       .i {
@@ -75,12 +82,12 @@
 
     // Styles cho submenu
     .nav-children {
-      width: 250px;
+      width: 280px;
       border-radius: 10px;
       background-color: get-color($accent, "100"); 
 
       .nav-link {
-        padding-left: 30px; 
+        padding-left: 20px; 
         color: get-color($primary, "200"); 
 
       &:hover {
@@ -98,18 +105,18 @@
 
   // Styles cho logout
   .logout-box {
-    width: 100%; 
-    text-align: center; 
+    width: 80%; 
     font-weight: bold;
-    padding: 15px 0; 
+    padding: 15px; 
     background-color: get-color($secondary, "100"); 
     color: get-color($neutral, "300"); 
     border-radius: 10px; 
+    border: 1px solid get-color($primary, "200"); 
     display: flex;
     justify-content: center; 
     align-items: center; 
     text-decoration: none; 
-    margin: 20px 0;
+    margin: 20px 20px 0 20px;
 
 
     i {

@@ -1,13 +1,12 @@
 @import "../../scss/variables.scss";
-
 .container-fluid {
     padding: 20px;
-    background-color: #f0f8ff;
   
     .h3, .h4 {
-      color: #333;
+      color: get-color($primary, "100");
       font-weight: bold;
       margin-top: 10px;
+      
     }
   
     button {
@@ -17,7 +16,7 @@
       transition: background-color 0.3s ease;
   
       &:hover {
-        background-color: #1890ff;
+        background-color: get-color($primary, "100");
         color: #fff;
       }
     }
@@ -77,16 +76,26 @@
       border-radius: 5px;
   
       .ant-table-thead > tr > th {
-        th { 
-          background-color: get-color($primary, "100") !important;
-          color: get-color($accent, "100") !important;        
-          font-weight: bold !important;
-          text-align: center;
-        }
+        background-color: get-color($primary, "100");
+        color: get-color($accent, "100");
+        font-weight: bold;
+        text-align: center;
+
       }
   
       .ant-table-tbody > tr > td {
         text-align: center;
+        color: get-color($primary, "100");
+
+        tr{
+                  &:nth-child(odd) {
+          
+          background-color:  get-color($background,'100');// Màu nền cho hàng chẵn
+        }
+        &:nth-child(even) {
+          background-color: get-color($secondary,'100'); // Màu nền cho hàng lẻ
+        }
+        }
   
         .ant-space-item {
           button {
@@ -167,3 +176,4 @@
     align-items: center; // Căn giữa icon và text
     white-space: nowrap; // Giữ text trên một dòng
   }
+  

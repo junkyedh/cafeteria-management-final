@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Form, Input, DatePicker, Modal, Table, Space, Popconfirm, message } from 'antd';
+import { Button, Form, Input, DatePicker, Modal, Table, Space, Popconfirm, message, Select } from 'antd';
 import "./CustomerList.scss";
 import { on } from 'events';
 import { MainApiRequest } from '@/services/MainApiRequest';
@@ -11,8 +11,14 @@ const CustomerList = () => {
     const [editingCustomer, setEditingCustomer] = useState<any | null>(null);
 
     const fetchCustomerList = async () => {
-        const res = await MainApiRequest.get('/user/list');
-        setCustomerList(res.data);
+        try {
+            const res = await MainApiRequest.get('/customer/list');
+            setCustomerList(res.data);
+            console.log(res.data);
+        } catch (error) {
+            console.error('Error fetching customer list:', error);
+            message.error('Failed to fetch customer list. Please try again.');
+        }
     };
 
     useEffect(() => {
@@ -33,9 +39,9 @@ const CustomerList = () => {
                 password,
                 ...rest
             } = data;
-            await MainApiRequest.put(`/user/${editingCustomer.id}`, rest);
+            await MainApiRequest.put(`/customer/${editingCustomer.id}`, rest);
         } else {
-            await MainApiRequest.post('/user', data);
+            await MainApiRequest.post('/customer', data);
         }
         fetchCustomerList();
         setEditingCustomer(null);
@@ -56,7 +62,7 @@ const CustomerList = () => {
     };
 
     const onDeleteCustomer = async (id: number) => {
-        await MainApiRequest.delete(`/user/${id}`);
+        await MainApiRequest.delete(`/customer/${id}`);
         fetchCustomerList();
     };
 
@@ -81,46 +87,34 @@ const CustomerList = () => {
                     form={form}
                     layout="vertical"
                 >
-                    <Form.Item
-                        label="Name"
-                        name="name"
-                        rules={[{ required: true, message: "Please input name!" }]}
-                    >
-                        <Input type="text" />
-                    </Form.Item>
                     <div className="field-row">
                         <Form.Item
-                            label="Email"
-                            name="email"
-                            rules={[{ required: true, message: "Please input email!" }]}
+                            label="Name"
+                            name="name"
+                            rules={[{ required: true, message: "Please input name!" }]}
                         >
-                            <Input type="email" />
+                            <Input type="text" />
                         </Form.Item>
-                        {!editingCustomer &&
-                            <Form.Item
-                                label="Password"
-                                name="password"
-                                rules={[{ required: true, message: "Please input password!" }]}
-                            >
-                                <Input.Password />
-                            </Form.Item>
-                        }
+                        <Form.Item
+                            label="Gender"
+                            name="gender"
+                            rules={[{ required: true, message: "Please input gender!" }]}
+                        >
+                            <Select>
+                                <Select.Option value="male">Male</Select.Option>
+                                <Select.Option value="female">Female</Select.Option>
+                            </Select>
+                        </Form.Item>
                     </div>
-                    <Form.Item
-                        label="Phone"
-                        name="phone"
-                        rules={[{ required: true, message: "Please input phone number!" }]}
-                    >
-                        <Input type="text" />
-                    </Form.Item>
-                    <Form.Item
-                        label="Address"
-                        name="address"
-                        rules={[{ required: true, message: "Please input address!" }]}
-                    >
-                        <Input type="text" />
-                    </Form.Item>
-
+                    <div className="field-row">
+                        <Form.Item
+                            label="Phone"
+                            name="phonecustomer"
+                            rules={[{ required: true, message: "Please input phone!" }]}
+                        >
+                            <Input type="text" />
+                        </Form.Item>
+                    </div>
                 </Form>
             </Modal>
 
@@ -129,9 +123,9 @@ const CustomerList = () => {
                 columns={[
                     { title: 'ID', dataIndex: 'id', key: 'id' },
                     { title: 'Name', dataIndex: 'name', key: 'name' },
-                    { title: 'Email', dataIndex: 'email', key: 'email' },
-                    { title: 'Address', dataIndex: 'address', key: 'address' },
-                    { title: 'Phone', dataIndex: 'phone', key: 'phone' },
+                    { title: 'Gender', dataIndex: 'gender', key: 'gender' },
+                    { title: 'Phone Number', dataIndex: 'phonecustomer', key: 'phonecustomer' },
+                    { title: 'Registration Date', dataIndex: 'registrationdate', key: 'registrationdate' },
                     {
                         title: 'Action',
                         key: 'actions',
