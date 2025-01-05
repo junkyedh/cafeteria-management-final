@@ -61,7 +61,7 @@
   
       .ant-modal-title {
         justify-self: center;
-        color: #333;
+        color: get-color($primary, "100");
       }
   
       .ant-modal-footer {
@@ -145,7 +145,7 @@
   }
   
   /* Modal Form Styling */
-  .customer-modal {
+  .promote-modal {
     .ant-form-item {
 
       label {

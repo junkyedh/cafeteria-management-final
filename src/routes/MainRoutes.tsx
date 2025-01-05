@@ -9,6 +9,10 @@ import Layout from "@/layouts/Layout/Layout";
 import CustomerList from "@/pages/CustomerList/CustomerList";
 import PageNotFound from "@/layouts/PageNotFound";
 import ProfileUser from "@/pages/ProfileUser/ProfileUser";
+import StaffList from "@/pages/StaffList/StaffList";
+import MaterialList from "@/pages/MaterialList/MaterialList";
+import ProductList from "@/pages/ProductList/ProductList";
+import Promote from "@/pages/Promote/Promote";
 
 export default function MainRoutes() {
   const location = useLocation();
@@ -79,8 +83,11 @@ export default function MainRoutes() {
       <Route path="/login" element={<Login />} />
       <Route path="/" element={<Layout />}>
           <Route path="manage-list/customer" element={<CustomerList/>} />
-          {/* <Route path="/manage-list/product" element={<AdminRoom/>} /> */}
+          <Route path="manage-list/staff" element={<StaffList/>} />
           <Route path="/staff-info" element={<ProfileUser/>} />
+          <Route path="/manage-list/material" element={<MaterialList/>} />
+          <Route path="manage-list/product" element={<ProductList/>} />
+          <Route path="/manage-list/promote" element={<Promote/>} />
           <Route path="*" element={<PageNotFound />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />

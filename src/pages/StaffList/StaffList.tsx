@@ -1,0 +1,196 @@
+import React, { useEffect, useState } from 'react';
+import { Button, Form, Input, DatePicker, Modal, Table, Space, Popconfirm, message, Select } from 'antd';
+import moment from 'moment';
+import "./StaffList.scss";
+import { MainApiRequest } from '@/services/MainApiRequest';
+
+const StaffList = () => {
+    const [form] = Form.useForm();
+    const [staffList, setStaffList] = useState<any[]>([]);
+    const [openCreateStaffModal, setOpenCreateStaffModal] = useState(false);
+    const [editingStaff, setEditingStaff] = useState<any | null>(null);
+
+    const fetchStaffList = async () => {
+        try {
+            const res = await MainApiRequest.get('/staff/list');
+            setStaffList(res.data);
+            console.log(res.data);
+        } catch (error) {
+            console.error('Error fetching staff list:', error);
+            message.error('Failed to fetch staff list. Please try again.');
+        }
+    };
+
+    useEffect(() => {
+        fetchStaffList();
+    }, []);
+
+    const onOpenCreateStaffModal = (record: any = null) => {
+        setEditingStaff(record);
+        if (record) {
+            form.setFieldsValue({
+                ...record,
+                startdate: moment(record.startdate),
+            });
+        }
+        form.setFieldsValue({});
+        setOpenCreateStaffModal(true);
+    };
+
+    const onOKCreateStaff = async () => {
+        const data = form.getFieldsValue();
+        data.birth = data.birth ? data.birth.format('YYYY-MM-DD') : null;
+        data.startdate = data.startdate.format('YYYY-MM-DD HH:mm:ss');
+
+        if (editingStaff) {
+            const { password, ...rest } = data;
+            await MainApiRequest.put(`/staff/${editingStaff.id}`, rest);
+        } else {
+            await MainApiRequest.post('/staff', data);
+        }
+
+        fetchStaffList();
+        setOpenCreateStaffModal(false);
+        form.resetFields();
+        setEditingStaff(null);
+    };
+
+    const onCancelCreateStaff = () => {
+        setOpenCreateStaffModal(false);
+        setEditingStaff(null);
+        form.resetFields();
+    };
+
+    const onEditStaff = (staff: any) => {
+        setEditingStaff(staff);
+        form.setFieldsValue({
+            ...staff,
+            birth: moment(staff.birth),
+            startdate: new Date().toISOString().split('T')[0],
+        });
+        setOpenCreateStaffModal(true);
+    };
+
+    const onDeleteStaff = async (id: number) => {
+        try {
+            await MainApiRequest.delete(`/staff/${id}`);
+            fetchStaffList();
+        } catch (error) {
+            console.error('Error deleting staff:', error);
+            message.error('Failed to delete staff. Please try again.');
+        }
+    };
+
+    return (
+        <div className="container-fluid m-2">
+            <h2 className='h2 header-custom'>DANH SÁCH NHÂN VIÊN</h2>
+            <Button type='primary' onClick={onOpenCreateStaffModal}>
+                Thêm nhân viên
+            </Button>
+
+            <Modal
+                className='staff-modal'
+                title={editingStaff ? "Chỉnh sửa" : "Thêm mới"}
+                open={openCreateStaffModal}
+                onOk={onOKCreateStaff}
+                onCancel={onCancelCreateStaff}
+            >
+                <Form form={form} layout="vertical">
+                    <div className="field-row">
+                        <Form.Item
+                            label="Tên nhân viên"
+                            name="name"
+                            rules={[{ required: true, message: "Please input name!" }]}
+                        >
+                            <Input type="text" />
+                        </Form.Item>
+                        <Form.Item
+                            label="Giới tính"
+                            name="gender"
+                            rules={[{ required: true, message: "Please input gender!" }]}
+                        >
+                            <Select>
+                                <Select.Option value="male">Male</Select.Option>
+                                <Select.Option value="female">Female</Select.Option>
+                            </Select>
+                        </Form.Item>
+                    </div>
+                    <div className="field-row">
+                        <Form.Item
+                            label="Ngày sinh"
+                            name="birth"
+                            rules={[{ required: true, message: "Please input birthday!" }]}
+                        >
+                            <DatePicker />
+                        </Form.Item>
+                        <Form.Item
+                            label="Loại nhân viên"
+                            name="typestaff"
+                            rules={[{ required: true, message: "Please input type staff!" }]}
+                        >
+                            <Select>
+                                <Select.Option value="admin">Admin</Select.Option>
+                                <Select.Option value="staff">Nhân viên</Select.Option>
+                            </Select>
+                        </Form.Item>
+                    </div>
+                    <div className="field-row">
+                        <Form.Item
+                            label="Số điện thoại"
+                            name="phonestaff"
+                            rules={[{ required: true, message: "Please input phone!" }]}
+                        >
+                            <Input type="text" />
+                        </Form.Item>
+                        <Form.Item
+                            label="Địa chỉ"
+                            name="address"
+                            rules={[{ required: true, message: "Please input address!" }]}
+                        >
+                            <Input type="text" />
+                        </Form.Item>
+                    </div>
+                </Form>
+            </Modal>
+            <Table
+                dataSource={staffList}
+                columns={[
+                    { title: 'ID', dataIndex: 'staffid', key: 'staffid' },
+                    { title: 'Tên nhân viên', dataIndex: 'fullname', key: 'fullname' },
+                    { title: 'Giới tính', dataIndex: 'gender', key: 'gender' },
+                    { title: 'Ngày sinh', dataIndex: 'birth', key: 'birth' },
+                    { title: 'Loại nhân viên', dataIndex: 'typestaff', key: 'typestaff' },
+                    { title: 'Số điện thoại', dataIndex: 'phonestaff', key: 'phonestaff' },
+                    { title: 'Địa chỉ', dataIndex: 'address', key: 'address' },
+                    { title: 'Giờ làm việc', dataIndex: 'workhours', key: 'workhours' },
+                    { title: 'Lương', dataIndex: 'salary', key: 'salary' },
+                    { title: 'Ngày bắt đầu', dataIndex: 'startdate', key: 'startdate' },
+                    //{ title: 'Status', dataIndex: 'activestatus', key: 'activestatus' },
+                    {
+                        title: 'Hành động',
+                        key: 'actions',
+                        render: (_, record) => (
+                            <Space size="middle">
+                                <Button type="default" onClick={() => onEditStaff(record)}>
+                                    <i className="fas fa-edit"></i>
+                                </Button>
+                                <Popconfirm
+                                    title="Bạn có chắc chắn muốn xóa nhân viên này không?"
+                                    onConfirm={() => onDeleteStaff(record.id)}
+                                    okText="Có"
+                                    cancelText="Không"
+                                >
+                                    <Button danger>
+                                        <i className="fas fa-trash"></i>
+                                    </Button>
+                                </Popconfirm>
+                            </Space>
+                        ),
+                    },
+                ]}
+            />
+        </div>
+    );
+};
+
+export default StaffList;
