@@ -1,0 +1,26 @@
+:root {
+    --sidebar-width: 300px;
+  }
+  
+  .layout {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f0f4f8;
+  
+    .navbar {
+      width: var(--sidebar-width);
+      background-color: #e4e7eb;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    }
+  
+    .main-content {
+      flex: 1;
+      background-color: #ffffff;
+      overflow-y: auto;
+      min-height: 100vh;
+    }
+  }
+  
