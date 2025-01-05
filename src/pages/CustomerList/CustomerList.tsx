@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Form, Input, DatePicker, Modal, Table, Space, Popconfirm, message, Select } from 'antd';
+import moment from 'moment';
 import "./CustomerList.scss";
-import { on } from 'events';
 import { MainApiRequest } from '@/services/MainApiRequest';
+
 const CustomerList = () => {
     const [form] = Form.useForm();
     const [customerList, setCustomerList] = useState<any[]>([]);
-
     const [openCreateCustomerModal, setOpenCreateCustomerModal] = useState(false);
     const [editingCustomer, setEditingCustomer] = useState<any | null>(null);
 
@@ -32,22 +32,26 @@ const CustomerList = () => {
     };
 
     const onOKCreateCustomer = async () => {
-        setOpenCreateCustomerModal(false);
-        const data = form.getFieldsValue();
-        if (editingCustomer) {
-            const {
-                password,
-                ...rest
-            } = data;
-            await MainApiRequest.put(`/customer/${editingCustomer.id}`, rest);
-        } else {
-            await MainApiRequest.post('/customer', data);
-        }
-        fetchCustomerList();
-        setEditingCustomer(null);
-        form.resetFields();
-    }
+        try {
+            const data = form.getFieldsValue();
+            data.registrationdate = data.registrationdate ? data.registrationdate.format('YYYY-MM-DD HH:mm:ss') : null;
 
+            if (editingCustomer) {
+                const { password, ...rest } = data;
+                await MainApiRequest.put(`/customer/${editingCustomer.id}`, rest);
+            } else {
+                await MainApiRequest.post('/customer', data);
+            }
+
+            fetchCustomerList();
+            setOpenCreateCustomerModal(false);
+            form.resetFields();
+            setEditingCustomer(null);
+        } catch (error) {
+            console.error('Error creating/updating customer:', error);
+            message.error('Failed to save customer. Please try again.');
+        }
+    };
 
     const onCancelCreateCustomer = () => {
         setOpenCreateCustomerModal(false);
@@ -57,90 +61,104 @@ const CustomerList = () => {
 
     const onEditCustomer = (customer: any) => {
         setEditingCustomer(customer);
-        form.setFieldsValue(customer);
+        form.setFieldsValue({
+            ...customer,
+            registrationdate: customer.registrationdate ? moment(customer.registrationdate) : null,
+        });
         setOpenCreateCustomerModal(true);
     };
 
     const onDeleteCustomer = async (id: number) => {
-        await MainApiRequest.delete(`/customer/${id}`);
-        fetchCustomerList();
+        try {
+            await MainApiRequest.delete(`/customer/${id}`);
+            fetchCustomerList();
+        } catch (error) {
+            console.error('Error deleting customer:', error);
+            message.error('Failed to delete customer. Please try again.');
+        }
     };
 
     return (
         <div className="container-fluid m-2">
-            <h3 className='h3'>Customer Management</h3>
-            <Button
-                type='primary'
-                onClick={() => onOpenCreateCustomerModal()}
-            >
-                Create Customer
+            <h2 className='h2 header-custom'>DANH SÁCH KHÁCH HÀNG</h2>
+            <Button type='primary' onClick={onOpenCreateCustomerModal}>
+                Thêm mới khách hàng
             </Button>
 
             <Modal
                 className='customer-modal'
-                title={editingCustomer ? "Edit Customer" : "Create Customer"}
+                title={editingCustomer ? "Chỉnh sửa" : "Thêm mới"}
                 open={openCreateCustomerModal}
                 onOk={onOKCreateCustomer}
                 onCancel={onCancelCreateCustomer}
             >
-                <Form
-                    form={form}
-                    layout="vertical"
-                >
+                <Form form={form} layout="vertical">
                     <div className="field-row">
                         <Form.Item
-                            label="Name"
+                            label="Tên"
                             name="name"
-                            rules={[{ required: true, message: "Please input name!" }]}
+                            rules={[{ required: true, message: "Vui lòng nhập tên!" }]}
                         >
                             <Input type="text" />
                         </Form.Item>
                         <Form.Item
-                            label="Gender"
+                            label="Giới tính"
                             name="gender"
-                            rules={[{ required: true, message: "Please input gender!" }]}
+                            rules={[{ required: true, message: "Vui lòng chọn giới tính!" }]}
                         >
                             <Select>
-                                <Select.Option value="male">Male</Select.Option>
-                                <Select.Option value="female">Female</Select.Option>
+                                <Select.Option value="male">Nam</Select.Option>
+                                <Select.Option value="female">Nữ</Select.Option>
                             </Select>
                         </Form.Item>
                     </div>
                     <div className="field-row">
                         <Form.Item
-                            label="Phone"
+                            label="Số điện thoại"
                             name="phonecustomer"
-                            rules={[{ required: true, message: "Please input phone!" }]}
+                            rules={[{ required: true, message: "Vui lòng nhập số điện thoại!" }]}
                         >
                             <Input type="text" />
+                        </Form.Item>
+                        <Form.Item
+                            label="Ngày đăng ký"
+                            name="registrationdate"
+                            rules={[{ required: true, message: "Vui lòng chọn ngày đăng ký!" }]}
+                        >
+                            <DatePicker showTime />
                         </Form.Item>
                     </div>
                 </Form>
             </Modal>
-
             <Table
                 dataSource={customerList}
+                pagination={{
+                    pageSize: 9, // Số lượng item trên mỗi trang
+                    showSizeChanger: true, // Hiển thị tùy chọn thay đổi số item trên mỗi trang
+                     // Các tùy chọn cho số item mỗi trang
+                    }}
                 columns={[
                     { title: 'ID', dataIndex: 'id', key: 'id' },
-                    { title: 'Name', dataIndex: 'name', key: 'name' },
-                    { title: 'Gender', dataIndex: 'gender', key: 'gender' },
-                    { title: 'Phone Number', dataIndex: 'phonecustomer', key: 'phonecustomer' },
-                    { title: 'Registration Date', dataIndex: 'registrationdate', key: 'registrationdate' },
+                    { title: 'Tên', dataIndex: 'fullname', key: 'fullname' },
+                    { title: 'Giới tính', dataIndex: 'gender', key: 'gender' },
+                    { title: 'Số điện thoại', dataIndex: 'phonecustomer', key: 'phonecustomer' },
+                    { title: 'Điểm tích lũy', dataIndex: 'loyaltypoints', key: 'loyaltypoints' },
+                    { title: 'Ngày đăng ký', dataIndex: 'registrationdate', key: 'registrationdate' },
                     {
-                        title: 'Action',
+                        title: 'Hành động',
                         key: 'actions',
                         render: (_, record) => (
                             <Space size="middle">
-                                <Button onClick={() => onEditCustomer(record)}>
+                                <Button type="default" onClick={() => onEditCustomer(record)}>
                                     <i className="fas fa-edit"></i>
                                 </Button>
                                 <Popconfirm
-                                    title="Are you sure to delete this customer?"
+                                    title="Bạn có chắc chắn muốn xóa khách hàng này không?"
                                     onConfirm={() => onDeleteCustomer(record.id)}
-                                    okText="Yes"
-                                    cancelText="No"
+                                    okText="Có"
+                                    cancelText="Không"
                                 >
-                                    <Button onClick={() => onDeleteCustomer(record.id)} danger>
+                                    <Button danger>
                                         <i className="fas fa-trash"></i>
                                     </Button>
                                 </Popconfirm>
