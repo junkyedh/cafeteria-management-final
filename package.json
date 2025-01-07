@@ -33,6 +33,7 @@
     "slick-carousel": "^1.8.1",
     "typescript": "^5.7.2",
     "web-vitals": "2.1.4",
+    "xlsx": "^0.18.5",
     "yet-another-react-lightbox": "^3.21.7"
   },
   "scripts": {
@@ -51,6 +52,7 @@
     "@types/react-dom": "^19.0.2",
     "@types/react-image-gallery": "^1.2.4",
     "@types/react-slick": "^0.23.13",
+    "@types/xlsx": "^0.0.36",
     "sass": "^1.81.1"
   },
   "eslintConfig": {

@@ -7,52 +7,52 @@ import { MainApiRequest } from '@/services/MainApiRequest';
 const StaffList = () => {
     const [form] = Form.useForm();
     const [staffList, setStaffList] = useState<any[]>([]);
+
     const [openCreateStaffModal, setOpenCreateStaffModal] = useState(false);
     const [editingStaff, setEditingStaff] = useState<any | null>(null);
 
     const fetchStaffList = async () => {
-        try {
             const res = await MainApiRequest.get('/staff/list');
             setStaffList(res.data);
-            console.log(res.data);
-        } catch (error) {
-            console.error('Error fetching staff list:', error);
-            message.error('Failed to fetch staff list. Please try again.');
-        }
-    };
+        };
 
     useEffect(() => {
         fetchStaffList();
     }, []);
 
-    const onOpenCreateStaffModal = (record: any = null) => {
-        setEditingStaff(record);
-        if (record) {
-            form.setFieldsValue({
-                ...record,
-                startdate: moment(record.startdate),
-            });
-        }
-        form.setFieldsValue({});
+    const onOpenCreateStaffModal = () => {
         setOpenCreateStaffModal(true);
-    };
+    }
 
     const onOKCreateStaff = async () => {
-        const data = form.getFieldsValue();
-        data.birth = data.birth ? data.birth.format('YYYY-MM-DD') : null;
-        data.startdate = data.startdate.format('YYYY-MM-DD HH:mm:ss');
-
-        if (editingStaff) {
-            const { password, ...rest } = data;
-            await MainApiRequest.put(`/staff/${editingStaff.id}`, rest);
-        } else {
-            await MainApiRequest.post('/staff', data);
-        }
-
-        fetchStaffList();
         setOpenCreateStaffModal(false);
-        form.resetFields();
-        setEditingStaff(null);
+        const formData = form.getFieldsValue();
+        
+        const data = {
+            ...formData,
+            birth: new Date().toISOString().split('T')[0],
+            startDate: moment().format('YYYY-MM-DD'),
+            workShiftID: 1,
+            workHours: 8,
+            salary: formData.salary || 0,
+            activeStatus: true,
+            roleID: 2,
+            password: "default123",
+        }
+        try {
+            if (editingStaff) {
+                const { password, ...rest } = data; // Không gửi password khi edit
+                await MainApiRequest.put(`/staff/${editingStaff.id}`, rest);
+            } else {
+                await MainApiRequest.post('/staff', data);
+            }
+            fetchStaffList();
+            setEditingStaff(null);
+            form.resetFields();
+        } catch (error) {
+            console.error("Failed to save staff:", error);
+            message.error("Thêm/chỉnh sửa nhân viên thất bại!");
+        }
     };
 
     const onCancelCreateStaff = () => {
@@ -63,22 +63,13 @@ const StaffList = () => {
 
     const onEditStaff = (staff: any) => {
         setEditingStaff(staff);
-        form.setFieldsValue({
-            ...staff,
-            birth: moment(staff.birth),
-            startdate: new Date().toISOString().split('T')[0],
-        });
+        form.setFieldsValue(staff);
         setOpenCreateStaffModal(true);
     };
 
     const onDeleteStaff = async (id: number) => {
-        try {
-            await MainApiRequest.delete(`/staff/${id}`);
-            fetchStaffList();
-        } catch (error) {
-            console.error('Error deleting staff:', error);
-            message.error('Failed to delete staff. Please try again.');
-        }
+        await MainApiRequest.delete(`/staff/${id}`);
+        fetchStaffList();
     };
 
     return (
@@ -99,7 +90,7 @@ const StaffList = () => {
                     <div className="field-row">
                         <Form.Item
                             label="Tên nhân viên"
-                            name="name"
+                            name="fullName"
                             rules={[{ required: true, message: "Please input name!" }]}
                         >
                             <Input type="text" />
@@ -125,7 +116,7 @@ const StaffList = () => {
                         </Form.Item>
                         <Form.Item
                             label="Loại nhân viên"
-                            name="typestaff"
+                            name="typeStaff"
                             rules={[{ required: true, message: "Please input type staff!" }]}
                         >
                             <Select>
@@ -137,7 +128,7 @@ const StaffList = () => {
                     <div className="field-row">
                         <Form.Item
                             label="Số điện thoại"
-                            name="phonestaff"
+                            name="phoneStaff"
                             rules={[{ required: true, message: "Please input phone!" }]}
                         >
                             <Input type="text" />
@@ -148,6 +139,13 @@ const StaffList = () => {
                             rules={[{ required: true, message: "Please input address!" }]}
                         >
                             <Input type="text" />
+                        </Form.Item>
+                        <Form.Item
+                            label="Password"
+                            name="password"
+                            rules={[{ required: true, message: "Please input password!" }]}
+                        >
+                            <Input type="password" />
                         </Form.Item>
                     </div>
                 </Form>

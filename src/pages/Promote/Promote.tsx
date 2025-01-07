@@ -2,8 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Button, Form, Input, DatePicker, Modal, Table, Select, Popconfirm, message, Space, Tag } from 'antd';
 import moment from 'moment';
 import "./Promote.scss";
-import axios from 'axios';
-import { render } from '@testing-library/react';
 import { MainApiRequest } from '@/services/MainApiRequest';
 
 const Promote = () => {
@@ -47,8 +45,8 @@ const Promote = () => {
         if (record) {
             form.setFieldsValue({
                 ...record,
-                startAt: moment(record.startAt),
-                endAt: moment(record.endAt),
+                startat: moment(record.startat),
+                endat: moment(record.endat),
             });
         }
         setOpenCreatePromoteModal(true);
@@ -58,7 +56,7 @@ const Promote = () => {
         setEditCoupon(record);
         if (record) {
             form.setFieldsValue(record);
-            form.setFieldsValue({ promoteId: record.promote.id });
+            form.setFieldsValue({ promotename: record.promoteid });
         }
         setOpenCreateCouponModal(true);
     }
@@ -66,15 +64,15 @@ const Promote = () => {
     const onOKCreatePromote = async () => {
         const data = form.getFieldsValue();
 
-        if (data.startAt) {
-            data.startAt = data.startAt.toISOString();
+        if (data.startat) {
+            data.startat = data.startat.toISOString();
         } else {
             message.error("Start date is required!");
             return;
         }
 
-        if (data.endAt) {
-            data.endAt = data.endAt.toISOString();
+        if (data.endat) {
+            data.endat = data.endat.toISOString();
         } else {
             message.error("End date is required!");
             return;
@@ -257,15 +255,15 @@ const Promote = () => {
                     <div className='field-row '>
                         <Form.Item
                             label='Ngày Bắt Đầu'
-                            name='startAt'
+                            name='startat'
                             rules={[{ required: true, message: 'Vui lòng chọn ngày bắt đầu!' }]}>
                             <DatePicker showTime />
                         </Form.Item>
                         <Form.Item
                             label='Ngày Kết Thúc'
-                            name='endAt'
+                            name='endat'
                             rules={[{ required: true, message: 'Vui lòng chọn ngày kết thúc!' }]}>
-                            <DatePicker showTime />
+                            <DatePicker showTime/>
                         </Form.Item>
                     </div>
                 </Form>
@@ -289,8 +287,8 @@ const Promote = () => {
                     >
                         <Select>
                             {promoteList.map((promote) => (
-                                <Select.Option key={promote.id} value={promote.id}>
-                                    {promote.name}
+                                <Select.Option key={promote.promoteid} value={promote.promoteid}>
+                                    {promote.promotename}
                                 </Select.Option>
                             ))}
                         </Select>
@@ -357,8 +355,9 @@ const Promote = () => {
             <Table
                 dataSource={couponList}
                 columns={[
-                    { title: 'ID', dataIndex: 'id', key: 'id' },
-                    { title: 'Tên Khuyến Mãi', dataIndex: 'promote', key: 'promote', render: (promote) => promote?.name || 'N/A' },
+                    { title: 'ID', dataIndex: 'couponid', key: 'couponid' },
+                    { title: 'Tên Khuyến Mãi', dataIndex: 'promotename', key: 'promotename', 
+                        render(_, record) { return record.promotename } },
                     { title: 'Trạng Thái', dataIndex: 'status', key: 'status', render: (status) => <Tag color={status === 'ACTIVE' ? 'green' : 'red'}>{status}</Tag> },
                     { title: 'Mã Coupon', dataIndex: 'code', key: 'code' },
                     {
