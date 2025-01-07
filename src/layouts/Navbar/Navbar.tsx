@@ -20,13 +20,13 @@ const routePath = [
       {
         icon: "fa-solid fa-cart-plus",
         title: "GỌI MÓN",
-        link: "booking",
+        link: "place-order",
         roles: ["ROLE_ADMIN", "ROLE_STAFF"]
       },
       {
         icon: "fa-solid fa-clipboard-list",
         title: "ĐƠN HÀNG",
-        link: "orders-list",
+        link: "list",
         roles: ["ROLE_ADMIN", "ROLE_STAFF"]
       }
     ]
@@ -72,7 +72,7 @@ const routePath = [
   { 
     icon: "fa-solid fa-chart-line",
     title: "THỐNG KÊ",
-    link: "/dashboard",
+    link: "/statistics",
     roles: ["ROLE_ADMIN"]
   },
   {

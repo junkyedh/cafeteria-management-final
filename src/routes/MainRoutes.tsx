@@ -13,6 +13,8 @@ import StaffList from "@/pages/StaffList/StaffList";
 import MaterialList from "@/pages/MaterialList/MaterialList";
 import ProductList from "@/pages/ProductList/ProductList";
 import Promote from "@/pages/Promote/Promote";
+// import OrderList from "@/pages/OrderList/OrderList";
+import Statistic from "@/pages/Statistic/Statistic";
 
 export default function MainRoutes() {
   const location = useLocation();
@@ -82,12 +84,16 @@ export default function MainRoutes() {
       <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/" element={<Layout />}>
+          {/* <Route path="/order/choose-table" element={} /> */}
+          {/* <Route path="/order/place-order" element={} /> */}
+          {/* <Route path="/order/list" element={<OrderList/>} /> */}
           <Route path="manage-list/customer" element={<CustomerList/>} />
           <Route path="manage-list/staff" element={<StaffList/>} />
           <Route path="/staff-info" element={<ProfileUser/>} />
           <Route path="/manage-list/material" element={<MaterialList/>} />
           <Route path="manage-list/product" element={<ProductList/>} />
           <Route path="/manage-list/promote" element={<Promote/>} />
+          <Route path= "statistics" element={<Statistic/>} />
           <Route path="*" element={<PageNotFound />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
