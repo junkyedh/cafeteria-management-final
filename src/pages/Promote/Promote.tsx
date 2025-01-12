@@ -64,15 +64,15 @@ const Promote = () => {
     const onOKCreatePromote = async () => {
         const data = form.getFieldsValue();
 
-        if (data.startat) {
-            data.startat = data.startat.toISOString();
+        if (data.startAt) {
+            data.startAt = data.startAt.toISOString();
         } else {
             message.error("Start date is required!");
             return;
         }
 
-        if (data.endat) {
-            data.endat = data.endat.toISOString();
+        if (data.endAt) {
+            data.endAt = data.endAt.toISOString();
         } else {
             message.error("End date is required!");
             return;
@@ -230,7 +230,7 @@ const Promote = () => {
                         </Form.Item>
                         <Form.Item
                             label='Loại'
-                            name='type'
+                            name='promoteType'
                             rules={[{ required: true, message: 'Vui lòng chọn loại!' }]}>
                             <Select>
                                 <Select.Option value="PERCENT">Phần trăm</Select.Option>
@@ -255,13 +255,13 @@ const Promote = () => {
                     <div className='field-row '>
                         <Form.Item
                             label='Ngày Bắt Đầu'
-                            name='startat'
+                            name='startAt'
                             rules={[{ required: true, message: 'Vui lòng chọn ngày bắt đầu!' }]}>
                             <DatePicker showTime />
                         </Form.Item>
                         <Form.Item
                             label='Ngày Kết Thúc'
-                            name='endat'
+                            name='endAt'
                             rules={[{ required: true, message: 'Vui lòng chọn ngày kết thúc!' }]}>
                             <DatePicker showTime/>
                         </Form.Item>
@@ -287,8 +287,8 @@ const Promote = () => {
                     >
                         <Select>
                             {promoteList.map((promote) => (
-                                <Select.Option key={promote.promoteid} value={promote.promoteid}>
-                                    {promote.promotename}
+                                <Select.Option key={promote.id} value={promote.id}>
+                                    {promote.name}
                                 </Select.Option>
                             ))}
                         </Select>
@@ -322,7 +322,7 @@ const Promote = () => {
             <Table
                 dataSource={promoteList}
                 columns={[
-                    { title: 'Tên Khuyến Mãi', dataIndex: 'promotename', key: 'promotename' },
+                    { title: 'Tên Khuyến Mãi', dataIndex: 'name', key: 'name' },
                     { title: 'Mô Tả', dataIndex: 'description', key: 'description' },
                     { title: 'Giảm Giá', dataIndex: 'discount', key: 'discount' },
                     { title: 'Loại', dataIndex: 'promotetype', key: 'promotetype' },
@@ -355,9 +355,9 @@ const Promote = () => {
             <Table
                 dataSource={couponList}
                 columns={[
-                    { title: 'ID', dataIndex: 'couponid', key: 'couponid' },
-                    { title: 'Tên Khuyến Mãi', dataIndex: 'promotename', key: 'promotename', 
-                        render(_, record) { return record.promotename } },
+                    { title: 'ID', dataIndex: 'id', key: 'id' },
+                    { title: 'Tên Khuyến Mãi', dataIndex: 'name', key: 'name', 
+                        render(_, record) { return record.name } },
                     { title: 'Trạng Thái', dataIndex: 'status', key: 'status', render: (status) => <Tag color={status === 'ACTIVE' ? 'green' : 'red'}>{status}</Tag> },
                     { title: 'Mã Coupon', dataIndex: 'code', key: 'code' },
                     {

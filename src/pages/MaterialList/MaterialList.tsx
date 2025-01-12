@@ -99,7 +99,7 @@ const MaterialList = () => {
                 <Form form={form} layout="vertical">
                         <Form.Item
                             label="Tên nguyên liệu"
-                            name="materialName"
+                            name="name"
                             rules={[{ required: true, message: "Please input name!" }]}
                         >
                             <Input type="text" />
@@ -165,8 +165,8 @@ const MaterialList = () => {
                      // Các tùy chọn cho số item mỗi trang
                     }}
                 columns={[
-                    { title: 'ID', dataIndex: 'materialid', key: 'materialid' },
-                    { title: 'Tên nguyên liệu', dataIndex: 'materialname', key: 'materialname' },
+                    { title: 'ID', dataIndex: 'id', key: 'id' },
+                    { title: 'Tên nguyên liệu', dataIndex: 'name', key: 'name' },
                     { title: 'Số lượng nhập', dataIndex: 'quantityimported', key: 'quantityimported' },
                     { title: 'Số lượng tồn', dataIndex: 'quantitystock', key: 'quantitystock' },
                     { title: 'Giá', dataIndex: 'price', key: 'price' },

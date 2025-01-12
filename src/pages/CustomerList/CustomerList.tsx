@@ -115,7 +115,7 @@ const CustomerList = () => {
                     <div className="field-row">
                         <Form.Item
                             label="Số điện thoại"
-                            name="phonecustomer"
+                            name="phone"
                             rules={[{ required: true, message: "Vui lòng nhập số điện thoại!" }]}
                         >
                             <Input type="text" />
@@ -139,9 +139,9 @@ const CustomerList = () => {
                     }}
                 columns={[
                     { title: 'ID', dataIndex: 'id', key: 'id' },
-                    { title: 'Tên', dataIndex: 'fullname', key: 'fullname' },
+                    { title: 'Tên', dataIndex: 'name', key: 'name' },
                     { title: 'Giới tính', dataIndex: 'gender', key: 'gender' },
-                    { title: 'Số điện thoại', dataIndex: 'phonecustomer', key: 'phonecustomer' },
+                    { title: 'Số điện thoại', dataIndex: 'phone', key: 'phone' },
                     { title: 'Điểm tích lũy', dataIndex: 'loyaltypoints', key: 'loyaltypoints' },
                     { title: 'Ngày đăng ký', dataIndex: 'registrationdate', key: 'registrationdate' },
                     {

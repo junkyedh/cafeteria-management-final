@@ -1,0 +1,161 @@
+.table-booking-container {
+    padding: 20px;
+    background-color: #f8f9fa;
+
+    .header-custom {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        text-align: center;
+        color: #333;
+        position: relative;
+    }
+
+    .action-buttons {
+        position: absolute;
+        top: 50px;
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+
+        .ant-btn {
+            width: 100px;
+            border-radius: 6px;
+            font-weight: bold;
+            background-color: #2f4156;
+            color: white;
+        }
+    }
+
+    .table-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-top: 50px;
+        justify-content: center;
+    }
+
+    .table-card {
+        width: 220px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s, box-shadow 0.3s;
+        cursor: pointer;
+
+        &:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-actions {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: flex;
+            gap: 8px;
+    
+            button {
+                border-radius: 4px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        }
+
+        .ant-card-body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .table-number {
+            font-size: 48px;
+            font-weight: bold;
+            margin: 0;
+            color: #333;
+        }
+
+        p {
+            font-size: 16px;
+            margin: 4px 0;
+        }
+
+        &.available {
+            border: 2px solid #52c41a;
+            background-color: #f6ffed;
+        }
+
+        &.booked {
+            border: 2px solid #faad14;
+            background-color: #fffbe6;
+        }
+
+        &.in-use {
+            border: 2px solid #ff4d4f;
+            background-color: #fff2f0;
+        }
+    }
+
+    .ant-btn {
+        width: 100px;
+        border-radius: 6px;
+        font-weight: bold;
+
+        &.ant-btn-primary {
+            background-color: #1890ff;
+            border-color: #1890ff;
+
+            &:hover {
+                background-color: #40a9ff;
+                border-color: #40a9ff;
+            }
+        }
+
+        &.ant-btn-danger {
+            background-color: #ff4d4f;
+            border-color: #ff4d4f;
+
+            &:hover {
+                background-color: #ff7875;
+                border-color: #ff7875;
+            }
+        }
+
+        &.ant-btn-green {
+            background-color: #4eff98;
+            border-color: #34b568;
+
+            &:hover {
+                background-color: #9bffcf;
+                border-color: #9bffcf;
+            }
+        }
+    }
+
+    .ant-modal {
+        .ant-modal-content {
+            border-radius: 8px;
+        }
+
+        .ant-modal-header {
+            background-color: #f5f5f5;
+            border-bottom: none;
+            text-align: center;
+
+            .ant-modal-title {
+                font-size: 20px;
+                font-weight: bold;
+            }
+        }
+
+        .ant-modal-footer {
+            display: flex;
+            justify-content: center;
+
+            .ant-btn {
+                margin: 0 8px;
+            }
+        }
+    }
+}

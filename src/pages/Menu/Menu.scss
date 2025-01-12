@@ -1,0 +1,183 @@
+.menu-container {
+    display: flex;
+  }
+  
+  .menu-left {
+    flex: 1;
+    padding: 20px;
+    border-right: 1px solid #ddd;
+    max-width: 70%;
+  }
+  
+  .menu-right {
+    flex: 1;
+    padding: 20px;
+    max-width: 400px;
+    height: 100vh;
+    overflow-y: auto;
+    border-left: 1px solid #ddd;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background-color: #f0f4f8;
+  }
+  
+  .menu-title {
+    font-size: 36px;
+    font-weight: bold;
+    text-align: center;
+    color: #2f4156;
+    margin-bottom: 20px;
+    background-color: #f0f4f8;
+  }
+  
+  .category-filter {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-around;
+  }
+  
+  .search-input {
+    margin-bottom: 20px;
+  }
+  
+  .product-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .product-card {
+    width: calc(33% - 10px);
+    padding: 10px;
+    border: 1px solid #ddd;
+    background-color: #f0f4f8;
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  .product-card h3 {
+    font-weight: bold; // Đảm bảo chữ in đậm
+    font-size: 16px;   // Có thể tùy chỉnh kích thước
+    margin: 10px 0;    // Khoảng cách trên và dưới
+}
+  .product-image {
+    width: 100%;
+    height: auto;
+  }
+  
+  .size-options,
+  .hot-cold-options {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 10px; /* Ensures buttons are spaced evenly */
+  }
+  
+  .size-button,
+  .mood-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%; /* Make buttons circular */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0f4f8;
+    border: 1px solid #2f4156;
+    cursor: pointer;
+  }
+  
+  .size-button.selected,
+  .mood-button.selected {
+    background-color: #2f4156;
+    color: white;
+  }
+  
+  .select-button {
+    margin-top: 10px;
+  }
+  
+  .order-items {
+    border-top: 1px solid #ddd;
+    margin-top: 20px;
+    padding-top: 20px;
+    flex-grow: 1; /* Allows this section to stretch and push the total section down */
+  }
+  
+  .order-list {
+    max-height: 300px;
+    overflow-y: scroll;
+  }
+  
+  .order-item-card {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  
+  .remove-button {
+    color: red;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+  }
+  
+  .total-info {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    position: sticky; /* Fix total and payment button to the bottom */
+    bottom: 0;
+    padding-top: 20px;
+    background-color: white; /* Ensure the section remains visible during scrolling */
+    z-index: 10;
+  }
+  
+  .quantity-controls {
+    display: flex;
+    align-items: center;
+  }
+  
+  .quantity-controls span {
+    margin: 0 10px;
+  }
+  
+  .quantity-controls button {
+    padding: 0 5px; /* Make the buttons smaller by reducing the padding */
+    font-size: 14px; /* Smaller font size */
+    width: 30px; /* Set a fixed width for smaller buttons */
+    height: 30px; /* Set a fixed height for smaller buttons */
+    border-radius: 50%; /* Keep the circular shape */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0f4f8;
+    border: 1px solid #2f4156;
+    cursor: pointer;
+  }
+  
+  .quantity-controls button:hover {
+    background-color: #2f4156;
+    color: white;
+  }
+  
+  .button {
+    width: 100%;
+    padding: 10px;
+    background-color: #2f4156;
+    color: white;
+    margin-top: 10px;
+  }
+
+  .customer-info input {
+    margin-bottom: 10px;
+  }
+  
+  .order-item-image {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    margin-right: 10px;
+  }
+  
