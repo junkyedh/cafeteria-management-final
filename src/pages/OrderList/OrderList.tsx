@@ -5,15 +5,7 @@ import { useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import './OrderList.scss';
 
-export const OrderList = ({
-  openCreateOrderModal,
-  onOKCreateOrder,
-  onCancelCreateOrder
-}: {
-  openCreateOrderModal: boolean;
-  onOKCreateOrder: (data:any) => void;
-  onCancelCreateOrder: () => void;
-}) =>{
+export const OrderList = () =>{
   const [form] = Form.useForm();
   const [orderList, setOrderList] = useState<any[]>([]);
   const [originalOrderList, setOriginalOrderList] = useState<any[]>([]);
@@ -63,7 +55,7 @@ export const OrderList = ({
   }
   const handleCancelOrder = (id: number) => {
     const updatedOrderList = orderList.map((order) => {
-      if (order.orderID === id && order.status === 'Đang chuẩn bị') {
+      if (order.orderID === id && order.status === 'Đang thực hiện') {
         return { ...order, status: 'Đã huỷ' };
       }
       return order;
@@ -80,8 +72,8 @@ export const OrderList = ({
       const filteredList = originalOrderList.filter((order) => {
         return (
           order.customerID.name.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-          order.orderID.toString().includes(searchKeyword) ||
-          order.customerID.phonecustomer.toLowerCase().includes(searchKeyword.toLowerCase())
+          order.id.toString().includes(searchKeyword) ||
+          order.customerID.phone.toLowerCase().includes(searchKeyword.toLowerCase())
         );
       });
       setOrderList(filteredList);
@@ -89,12 +81,12 @@ export const OrderList = ({
   };
 
   const handleExportInvoice = (id: number) => {
-    const order = orderList.find((order) => order.orderID === id);
+    const order = orderList.find((order) => order.id === id);
     if (order) {
       const invoiceData= {
-        orderID: order.orderID,
+        id: order.id,
         customerName: order.customerID.name,
-        phoneCustomer: order.customerID.phonecustomer,
+        phone: order.customerID.phone,
         serviceType: order.serviceType,
         totalPrice: order.totalPrice,
         orderDate: moment(order.orderDate).format('DD-MM-YYYY HH:mm:ss'),
@@ -102,7 +94,7 @@ export const OrderList = ({
         status: order.status
       }
       console.log('Invoice:', invoiceData);
-      message.success(`Xuất hóa đơn cho đơn hàng ${order.orderID} thành công.`);
+      message.success(`Xuất hóa đơn cho đơn hàng ${order.id} thành công.`);
     } else {
       message.error('Không thể xuất hóa đơn. Đơn hàng không tồn tại.');
     }
@@ -111,9 +103,9 @@ export const OrderList = ({
   const handleExportOrderList = () => {
     const worksheet = XLSX.utils.json_to_sheet(
       orderList.map((order) => ({
-        orderID: order.orderID,
+        id: order.id,
         customerName: order.customerID.name,
-        phoneCustomer: order.customerID.phonecustomer,
+        phone: order.customerID.phone,
         serviceType: order.serviceType,
         totalPrice: order.totalPrice,
         orderDate: moment(order.orderDate).format('DD-MM-YYYY HH:mm:ss'),
@@ -130,7 +122,7 @@ export const OrderList = ({
   const mappingColor = (status: string) => {
     switch (status) {
       case 'Đang chuẩn bị': return 'purple';
-      case 'Hoàn tất': return 'green';
+      case 'Hoàn thành': return 'green';
       case 'Đã huỷ': return 'red';
       default: return 'black';
     }
@@ -138,7 +130,7 @@ export const OrderList = ({
 
   const handleCompleteOrder = (id: number) => {
     const updatedOrderList = orderList.map((order) => {
-      if (order.orderID === id && order.status === 'Đang chuẩn bị') {
+      if (order.id === id && order.status === 'Đang chuẩn bị') {
         return { ...order, status: 'Hoàn tất' };
       }
       return order;
@@ -170,22 +162,21 @@ export const OrderList = ({
       </div>
       <Table
         dataSource={orderList}
-        rowKey= "orderID"
+        rowKey= "id"
         showSorterTooltip={{ target: 'sorter-icon' }}
         columns={[
           {
-            sorter: (a,b) => a.orderID - b.orderID,
-            title: 'Mã đơn', dataIndex: 'orderID', key: 'orderID',
+            sorter: (a,b) => a.id - b.id,
+            title: 'Mã đơn', dataIndex: 'id', key: 'id',
           },
           {
-            sorter: (a,b) => a.orderID.customerID.name.localeCompare(b.orderID.customerID.name),
-            title: 'Tên khách hàng', dataIndex: 'customerID', key: 'customerID', 
-            render (customerID, record) { return customerID.name}
+            sorter: (a,b) => a.id.customerID.localeCompare(b.id.customerID),
+            title: 'Mã khách hàng', dataIndex: 'customerID', key: 'customerID', 
           },
           {
-            sorter: (a,b) => a.customerID.phonecustomer.localeCompare(b.customerID.phonecustomer),
-            title: 'Số điện thoại', dataIndex: 'customerID', key: 'customerPhone',
-            render: (customer: any) => customer.phonecustomer,
+            sorter: (a,b) => a.customerID.phone.localeCompare(b.customerID.phone),
+            title: 'Số điện thoại', dataIndex: 'customerID', key: 'phone',
+            render: (customer: any) => customer.phone,
           },
           {
             sorter: (a,b) => a.serviceType.localeCompare(b.serviceType),
@@ -201,9 +192,8 @@ export const OrderList = ({
             render: (orderDate: string) => moment(orderDate).format('DD-MM-YYYY HH:mm:ss')
           },
           {
-            sorter: (a,b) => a.staffID.name.localeCompare(b.staffID.name),
+            sorter: (a,b) => a.staffID.localeCompare(b.staffID),
             title: 'Nhân viên phục vụ', dataIndex: 'staffID', key: 'staffID', 
-            render: (staff: any) => staff.name,
           },
           {
             sorter: (a,b) => a.status.localeCompare(b.status),
@@ -220,7 +210,7 @@ export const OrderList = ({
                   <Space size="middle">                    
                     <Button
                       type='primary'
-                      onClick={() => handleCompleteOrder(record.orderID)}
+                      onClick={() => handleCompleteOrder(record.id)}
                       style={{ marginRight: 8 }}
                     >
                       Hoàn tất
@@ -247,3 +237,4 @@ export const OrderList = ({
   );
 };
 
+export default OrderList;

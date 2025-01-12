@@ -194,7 +194,7 @@ const ProductList = () => {
         </Form.Item>
         <Form.Item
         label="Tên sản phẩm"
-        name="productName"
+        name="name"
         rules={[{ required: true, message: 'Vui lòng nhập tên sản phẩm!' }]}
         >
         <Input type="text" />
@@ -254,10 +254,10 @@ const ProductList = () => {
           title: 'Hình ảnh',
           dataIndex: 'imageurl',
           key: 'imageurl',
-          render: (images) => (
+          render: (image: string) => (
             <img
-          src={images?.[0] || imgDefault}
-          alt="Room"
+          src={image || imgDefault}
+          alt="Product"
           style={{
           width: '100px',
           height: '100px',
@@ -266,13 +266,13 @@ const ProductList = () => {
             />
           ),
           },
-          { title: 'ID', dataIndex: 'productid', key: 'productid' },
-          { title: 'Tên sản phẩm', dataIndex: 'productname', key: 'productname' },
+          { title: 'ID', dataIndex: 'id', key: 'id' },
+          { title: 'Tên sản phẩm', dataIndex: 'name', key: 'name' },
           { title: 'Giá', key: 'price', render: (_, record) => (
             <div>
-            <div>Size S: {record.price_s}</div>
-            <div>Size M: {record.price_m}</div>
-            <div>Size L: {record.price_l}</div>
+            <div>Size S: {record.price}</div>
+            <div>Size M: {record.price+record.upsize}</div>
+            <div>Size L: {record.price+record.upsize*2}</div>
             </div>
             ),
           },

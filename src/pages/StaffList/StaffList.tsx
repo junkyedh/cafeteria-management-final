@@ -90,7 +90,7 @@ const StaffList = () => {
                     <div className="field-row">
                         <Form.Item
                             label="Tên nhân viên"
-                            name="fullName"
+                            name="name"
                             rules={[{ required: true, message: "Please input name!" }]}
                         >
                             <Input type="text" />
@@ -101,8 +101,8 @@ const StaffList = () => {
                             rules={[{ required: true, message: "Please input gender!" }]}
                         >
                             <Select>
-                                <Select.Option value="male">Male</Select.Option>
-                                <Select.Option value="female">Female</Select.Option>
+                                <Select.Option value="Nam">Male</Select.Option>
+                                <Select.Option value="Nữ">Female</Select.Option>
                             </Select>
                         </Form.Item>
                     </div>
@@ -120,15 +120,15 @@ const StaffList = () => {
                             rules={[{ required: true, message: "Please input type staff!" }]}
                         >
                             <Select>
-                                <Select.Option value="admin">Admin</Select.Option>
-                                <Select.Option value="staff">Nhân viên</Select.Option>
+                                <Select.Option value="Admin">Admin</Select.Option>
+                                <Select.Option value="Staff">Nhân viên</Select.Option>
                             </Select>
                         </Form.Item>
                     </div>
                     <div className="field-row">
                         <Form.Item
                             label="Số điện thoại"
-                            name="phoneStaff"
+                            name="phone"
                             rules={[{ required: true, message: "Please input phone!" }]}
                         >
                             <Input type="text" />
@@ -153,12 +153,12 @@ const StaffList = () => {
             <Table
                 dataSource={staffList}
                 columns={[
-                    { title: 'ID', dataIndex: 'staffid', key: 'staffid' },
-                    { title: 'Tên nhân viên', dataIndex: 'fullname', key: 'fullname' },
+                    { title: 'ID', dataIndex: 'id', key: 'id' },
+                    { title: 'Tên nhân viên', dataIndex: 'name', key: 'name' },
                     { title: 'Giới tính', dataIndex: 'gender', key: 'gender' },
                     { title: 'Ngày sinh', dataIndex: 'birth', key: 'birth' },
                     { title: 'Loại nhân viên', dataIndex: 'typestaff', key: 'typestaff' },
-                    { title: 'Số điện thoại', dataIndex: 'phonestaff', key: 'phonestaff' },
+                    { title: 'Số điện thoại', dataIndex: 'phone', key: 'phone' },
                     { title: 'Địa chỉ', dataIndex: 'address', key: 'address' },
                     { title: 'Giờ làm việc', dataIndex: 'workhours', key: 'workhours' },
                     { title: 'Lương', dataIndex: 'salary', key: 'salary' },
