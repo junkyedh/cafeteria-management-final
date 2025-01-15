@@ -15,7 +15,7 @@ const Promote = () => {
 
     // Hàm random mã CouponCode
     const generateRandomCode = () => {
-        const length = 15; // Random 15 ký tự
+        const length = 5; // Random 15 ký tự
         const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         let result = "";
         for (let i = 0; i < length; i++) {
@@ -45,142 +45,84 @@ const Promote = () => {
         if (record) {
             form.setFieldsValue({
                 ...record,
-                startat: moment(record.startat),
-                endat: moment(record.endat),
+                startAt: moment(record.startAt),
+                endAt: moment(record.endAt),
             });
         }
         setOpenCreatePromoteModal(true);
-    };
+    }
+    
 
     const onOpenCreateCouponModal = (record: any = null) => {
         setEditCoupon(record);
         if (record) {
             form.setFieldsValue(record);
-            form.setFieldsValue({ promotename: record.promoteid });
+            form.setFieldsValue({ promoteId: record.promote.id });
         }
         setOpenCreateCouponModal(true);
     }
 
     const onOKCreatePromote = async () => {
-        const data = form.getFieldsValue();
-
-        if (data.startAt) {
-            data.startAt = data.startAt.toISOString();
-        } else {
-            message.error("Start date is required!");
-            return;
-        }
-
-        if (data.endAt) {
-            data.endAt = data.endAt.toISOString();
-        } else {
-            message.error("End date is required!");
-            return;
-        }
-
         try {
-            let res;
+            const data = form.getFieldsValue();
+            if (data.startAt) {
+                data.startAt = data.startAt.toISOString();
+            } else {
+                message.error("Start date is required!");
+                return;
+            }
+            if (data.endAt) {
+                data.endAt = data.endAt.toISOString();
+            } else {
+                message.error("End date is required!");
+                return;
+            }
+
             if (editPromote) {
-                res = await MainApiRequest.put(`/promote/${editPromote.id}`, data);
+                const { id, ...rest } = data;
+                await MainApiRequest.put(`/promote/${editPromote.id}`, rest);
             } else {
-                res = await MainApiRequest.post('/promote', data);
+                await MainApiRequest.post('/promote', data);
             }
 
-            if (res && res.status === 200) {
-                fetchPromoteList();
-                setOpenCreatePromoteModal(false);
-                form.resetFields();
-                message.success("Promote saved successfully!");
-            } else {
-                message.error("Failed to save promote: " + res?.data?.message || "Unknown error");
-            }
+            fetchPromoteList();
+            setOpenCreatePromoteModal(false);
+            form.resetFields();
+            message.success("Promote saved successfully!");
+            setEditPromote(null);
+        
         } catch (error) {
-            // Handle error from API request
-            if ((error as any).response) {
-                const err = error as any;
-                message.error(`Error: ${err.response.data?.message || err.response.statusText}`);
-            } else {
-                message.error('An unexpected error occurred');
-            }
+            console.error('Error saving promote:', error);
+            message.error('Failed to save promote. Please try again.');
         }
-    };
+    }
 
-
-    const onDeletePromote = async (id: number) => {
-        try {
-            const res = await MainApiRequest.delete(`/promote/${id}`);
-            if (res && res.status === 200) {
-                fetchPromoteList();
-                fetchCouponList();
-                message.success('Promote deleted successfully!');
-            } else {
-                message.error('Failed to delete promote: ' + res?.data?.message || "Unknown error");
-            }
-        } catch (error) {
-            // Handle error from API request
-            // if (axios.isAxiosError(error) && error.response) {
-            //     const err = error as any;
-            //     message.error(`Error: ${err.response.data?.message || err.response.statusText}`);
-            // } else {
-            //     message.error('An unexpected error occurred');
-            // }
-        }
-    };
     const onOKCreateCoupon = async () => {
-        const data = form.getFieldsValue();
-
-        if (!data.code || data.code.trim() === "") {
-            message.error("Coupon code is required!");
-            return;
-        }
-
         try {
-            let res;
+            const data = form.getFieldsValue();
+            const now = moment();
+            const promote = promoteList.find(p => p.id === data.promoteId);
+            if (promote && moment(promote.endAt).isBefore(now)) {
+                data.status = 'Hết hạn';
+            } else {
+                data.status = 'Có hiệu lực';
+            }
             if (editCoupon) {
-                res = await MainApiRequest.put(`/promote/coupon/${editCoupon.id}`, data);
+                const { id, ...rest } = data;
+                await MainApiRequest.put(`/promote/coupon/${editCoupon.id}`, rest);
             } else {
-                res = await MainApiRequest.post('/promote/coupon', data);
+                await MainApiRequest.post('/promote/coupon', data);
             }
-
-            if (res && res.status === 200) {
-                fetchCouponList();
-                setOpenCreateCouponModal(false);
-                form.resetFields();
-                message.success("Coupon saved successfully!");
-            } else {
-                message.error("Failed to save coupon: " + res?.data?.message || "Unknown error");
-            }
+            fetchCouponList();
+            setOpenCreateCouponModal(false);
+            form.resetFields();
+            message.success('Coupon saved successfully!');
+            setEditCoupon(null);
         } catch (error) {
-            // // Handle error from API request
-            // if (axios.isAxiosError(error) && error.response) {
-            //     message.error(`Error: ${error.response.data?.message || error.response.statusText}`);
-            // } else {
-            //     message.error('An unexpected error occurred');
-            // }
+            console.error('Error saving coupon:', error);
+            message.error('Failed to save coupon. Please try again  ');
         }
-    };
-
-
-
-    const onDeleteCoupon = async (id: number) => {
-        try {
-            const res = await MainApiRequest.delete(`/promote/coupon/${id}`);
-            if (res && res.status === 200) {
-                fetchCouponList();
-                message.success('Coupon deleted successfully!');
-            } else {
-                message.error('Failed to delete coupon: ' + res?.data?.message || "Unknown error");
-            }
-        } catch (error) {
-            // // Handle error from API request
-            // if (axios.isAxiosError(error) && error.response) {
-            //     message.error(`Error: ${error.response.data?.message || error.response.statusText}`);
-            // } else {
-            //     message.error('An unexpected error occurred');
-            // }
-        }
-    };
-
+    }; 
 
     const onCancelCreatePromote = () => {
         setOpenCreatePromoteModal(false);
@@ -191,7 +133,53 @@ const Promote = () => {
         setOpenCreateCouponModal(false);
         form.resetFields();
     }
-    console.log(couponList);
+
+    const onOpenEditPromote = (record: any) => {
+        setEditPromote(record);
+        form.setFieldsValue({
+            ...record,
+            startAt: moment(record.startAt),
+            endAt: moment(record.endAt),
+        });
+        setOpenCreatePromoteModal(true);
+    }
+
+    const onOpenEditCoupon = (record: any) => {
+        setEditCoupon(record);
+        form.setFieldsValue(record);
+        form.setFieldsValue({ promoteId: record.promote.id });
+        setOpenCreateCouponModal(true);
+    }
+
+    const onDeletePromote = async (id: number) => {
+        try {
+            await MainApiRequest.delete(`/promote/${id}`);
+            fetchPromoteList();
+            fetchCouponList();
+            message.success('Promote deleted successfully!');
+        } catch (error) {
+            console.error('Error deleting promote:', error);
+            message.error('Failed to delete promote. Please try again.');
+            }
+    }
+
+    const onDeleteCoupon = async (id: number) => {
+        try {
+            await MainApiRequest.delete(`/promote/coupon/${id}`);
+            fetchCouponList();
+            message.success('Coupon deleted successfully!');
+        } catch (error) {
+            console.error('Error deleting coupon:', error);
+            message.error('Failed to delete coupon. Please try again.');
+        }
+    }
+
+    const mappingColor = (status: string) => {
+        switch (status) {
+            case 'Có hiệu lực': return 'green';
+            case 'Hết hạn': return 'red';
+        }
+    }
 
     return (
         <div className="container-fluid m-2">
@@ -200,19 +188,12 @@ const Promote = () => {
                 type='primary'
                 onClick={() => onOpenCreatePromoteModal()}
             >
-                Thêm Voucher
-            </Button>
-            <Button
-                type='primary'
-                onClick={() => onOpenCreateCouponModal()}
-                style={{ marginLeft: 10 }}
-            >
-                Thêm Coupon
+                Thêm mới Khuyến mãi
             </Button>
 
             <Modal
                 className='promote-modal'
-                title={editPromote ? "Chỉnh sửa" : "Tạo mới"}
+                title={editPromote ? "Chỉnh sửa" : "Thêm mới"}
                 open={openCreatePromoteModal}
                 onOk={() => onOKCreatePromote()}
                 onCancel={() => onCancelCreatePromote()}
@@ -221,49 +202,50 @@ const Promote = () => {
                     form={form}
                     layout="vertical"
                 >
+
                     <div className='field-row'>
                         <Form.Item
-                            label='Tên Khuyến Mãi'
+                            label='Tên khuyến mãi'
                             name='name'
-                            rules={[{ required: true, message: 'Vui lòng nhập tên khuyến mãi!' }]}>
+                            rules={[{ required: true, message: 'Please input promote name!' }]}>
                             <Input type='text' />
                         </Form.Item>
                         <Form.Item
                             label='Loại'
                             name='promoteType'
-                            rules={[{ required: true, message: 'Vui lòng chọn loại!' }]}>
-                            <Select>
-                                <Select.Option value="PERCENT">Phần trăm</Select.Option>
-                                <Select.Option value="FIXED">Cố định</Select.Option>
+                            rules={[{ required: true, message: 'Please select type!' }]}>
+                            <Select >
+                                <Select.Option value="Phần trăm">Phần trăm</Select.Option>
+                                <Select.Option value="Cố định">Cố định</Select.Option>
                             </Select>
                         </Form.Item>
                     </div>
                     <div className='field-row'>
                         <Form.Item
-                            label='Mô Tả'
+                            label='Mô tả'
                             name='description'
-                            rules={[{ required: true, message: 'Vui lòng nhập mô tả!' }]}>
+                            rules={[{ required: true, message: 'Please input description!' }]}>
                             <Input type='text' />
                         </Form.Item>
                         <Form.Item
-                            label='Giảm Giá'
+                            label='Giảm giá'
                             name='discount'
-                            rules={[{ required: true, message: 'Vui lòng nhập giảm giá!' }]}>
+                            rules={[{ required: true, message: 'Please input discount!' }]}>
                             <Input type='number' />
                         </Form.Item>
                     </div>
                     <div className='field-row '>
                         <Form.Item
-                            label='Ngày Bắt Đầu'
+                            label='Ngày bắt đầu'
                             name='startAt'
-                            rules={[{ required: true, message: 'Vui lòng chọn ngày bắt đầu!' }]}>
+                            rules={[{ required: true, message: 'Please select start date!' }]}>
                             <DatePicker showTime />
                         </Form.Item>
                         <Form.Item
-                            label='Ngày Kết Thúc'
+                            label='Ngày kết thúc'
                             name='endAt'
-                            rules={[{ required: true, message: 'Vui lòng chọn ngày kết thúc!' }]}>
-                            <DatePicker showTime/>
+                            rules={[{ required: true, message: 'Please select end date!' }]}>
+                            <DatePicker showTime />
                         </Form.Item>
                     </div>
                 </Form>
@@ -281,9 +263,9 @@ const Promote = () => {
                     layout="vertical"
                 >
                     <Form.Item
-                        label='Tên Khuyến Mãi'
+                        label='Tên khuyến mãi'
                         name='promoteId'
-                        rules={[{ required: true, message: 'Please input tên khuyến mãi!' }]}
+                        rules={[{ required: true, message: 'Please input promote name!' }]}
                     >
                         <Select>
                             {promoteList.map((promote) => (
@@ -297,7 +279,7 @@ const Promote = () => {
                         <Form.Item
                             label='Mã Coupon'
                             name='code'
-                            rules={[{ required: true, message: 'Please input mã coupon!' }]}
+                            rules={[{ required: true, message: 'Please input coupon code!' }]}
                         >
                             <Input
                                 addonAfter={
@@ -318,27 +300,37 @@ const Promote = () => {
                 </Form>
             </Modal>
 
-            <h4 className='h4 mt-3'>Danh sách khuyến mãi </h4>
+            <h4 className='h4 mt-3'>Danh sách Khuyến mãi</h4>
             <Table
                 dataSource={promoteList}
+                pagination={{
+                    pageSize: 5, // Số lượng item trên mỗi trang
+                    showSizeChanger: true, // Hiển thị tùy chọn thay đổi số item trên mỗi trang
+                     // Các tùy chọn cho số item mỗi trang
+                    }
+                }                
                 columns={[
-                    { title: 'Tên Khuyến Mãi', dataIndex: 'name', key: 'name' },
-                    { title: 'Mô Tả', dataIndex: 'description', key: 'description' },
-                    { title: 'Giảm Giá', dataIndex: 'discount', key: 'discount' },
-                    { title: 'Loại', dataIndex: 'promotetype', key: 'promotetype' },
-                    { title: 'Ngày Bắt Đầu', dataIndex: 'startAt', key: 'startAt', render: (startAt: string) => moment(startAt).format('YYYY-MM-DD HH:mm:ss') },
-                    { title: 'Ngày Kết Thúc', dataIndex: 'endAt', key: 'endAt', render: (endAt: string) => moment(endAt).format('YYYY-MM-DD HH:mm:ss') },
+                    { title: 'Tên khuyến mãi', dataIndex: 'name', key: 'name' },
+                    { title: 'Mô tả', dataIndex: 'description', key: 'description' },
+                    { title: 'Giảm giá', dataIndex: 'discount', key: 'discount',
+                        render: (discount: number, record) => {
+                            return record.promoteType === 'Phần trăm' ? `${discount}%` : `${discount}đ`;
+                        }
+                     },
+                    { title: 'Loại', dataIndex: 'promoteType', key: 'promoteType'},
+                    { title: 'Ngày bắt đầu', dataIndex: 'startAt', key: 'startAt', render: (startAt: string) => moment(startAt).format('YYYY-MM-DD HH:mm:ss') },
+                    { title: 'Ngày kết thúc', dataIndex: 'endAt', key: 'endAt', render: (endAt: string) => moment(endAt).format('YYYY-MM-DD HH:mm:ss') },
                     {
-                        title: 'Hành Động', key: 'actions', render: (text, record) => (
+                        title: 'Actions', key: 'actions', render: (text, record) => (
                             <Space size="middle">
-                                <Button onClick={() => onOpenCreatePromoteModal(record)}>
+                                <Button onClick={() => onOpenEditPromote(record)}>
                                     <i className="fas fa-edit"></i>
                                 </Button>
                                 <Popconfirm
-                                    title="Bạn có chắc chắn muốn xóa khuyến mãi này không?"
+                                    title="Bạn có chắc chắn muốn xóa khuyến mãi này?"
                                     onConfirm={() => onDeletePromote(record.id)}
-                                    okText="Có"
-                                    cancelText="Không"
+                                    okText="Đồng ý"
+                                    cancelText="Huỷ"
                                 >
                                     <Button danger>
                                         <i className="fas fa-trash"></i>
@@ -349,28 +341,37 @@ const Promote = () => {
                     },
                 ]}
             />
-                
 
-            <h4 className='h4 mt-3'>Danh sách Coupon</h4>
+            <h4 className='h4'>Coupon List</h4>
+            <Button
+                type='primary'
+                onClick={() => onOpenCreateCouponModal()}
+                style={{ marginLeft: 10 }}
+            >
+                Thêm mới Coupon
+            </Button>
             <Table
                 dataSource={couponList}
                 columns={[
                     { title: 'ID', dataIndex: 'id', key: 'id' },
-                    { title: 'Tên Khuyến Mãi', dataIndex: 'name', key: 'name', 
-                        render(_, record) { return record.name } },
-                    { title: 'Trạng Thái', dataIndex: 'status', key: 'status', render: (status) => <Tag color={status === 'ACTIVE' ? 'green' : 'red'}>{status}</Tag> },
-                    { title: 'Mã Coupon', dataIndex: 'code', key: 'code' },
+                    { title: 'Tên khuyến mãi', dataIndex: 'promote', key: 'promote', render: (promote) => promote?.name || 'N/A' },
+                    { title: 'Trạng thái', dataIndex: 'status', key: 'status', 
+                        render: (status: string) => {
+                            return <Tag color={mappingColor(status)}>{status}</Tag>
+                        }
+                    },
+                    { title: 'Mã Code', dataIndex: 'code', key: 'code' },
                     {
-                        title: 'Hành Động', key: 'actions', render: (text, record) => (
+                        title: 'Actions', key: 'actions', render: (text, record) => (
                             <Space size="middle">
-                                <Button onClick={() => onOpenCreateCouponModal(record)}>
+                                <Button onClick={() => onOpenEditCoupon(record)}>
                                     <i className="fas fa-edit"></i>
                                 </Button>
                                 <Popconfirm
-                                    title="Bạn có chắc chắn muốn xóa coupon này không?"
+                                    title="Bạn có chắc chắn muốn xóa coupon này?"
                                     onConfirm={() => onDeleteCoupon(record.id)}
-                                    okText="Có"
-                                    cancelText="Không"
+                                    okText="Đồng ý"
+                                    cancelText="Hủy"
                                 >
                                     <Button danger>
                                         <i className="fas fa-trash"></i>
@@ -381,9 +382,7 @@ const Promote = () => {
                     },
                 ]}
             />
-
         </div>
     );
 };
-
 export default Promote;

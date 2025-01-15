@@ -91,10 +91,12 @@ type SubRoutesState = {
 const Navbar: React.FC = () => {
   const [currentPath, setCurrentPath] = useState("");
   const [openSubRoutes, setOpenSubRoutes] = useState<SubRoutesState>({});
+  const [userRole, setUserRole] = useState<string | null>(null);
   const location = useLocation();
 
   useEffect(() => {
     setCurrentPath(location.pathname);
+    const role = localStorage.getItem('role');
   }, [location]);
 
   const toggleSubRoutes = (path: string) => {
@@ -112,7 +114,7 @@ const Navbar: React.FC = () => {
 
   const renderNavigationList = () => {
     return routePath.map((route, index) => {
-      if (route.link === "*") return null;
+      if (!route.roles) return null;
       
       const hasChildren = route.children && route.children.length > 0;
       const isActive = comparePathname(route.link ?? "", currentPath);

@@ -12,7 +12,7 @@ const Login = () => {
         token
     } = context;
 
-    const [email, setEmail] = React.useState('');
+    const [phone, setPhone] = React.useState('');
     const [password, setPassword] = React.useState('');
     const [remember, setRemember] = React.useState(false);
 
@@ -22,7 +22,7 @@ const Login = () => {
 
     const handleLogin = async () => {
         const res = await MainApiRequest.post('/auth/signin', {
-            email,
+            phone,
             password
         });
 
@@ -31,6 +31,7 @@ const Login = () => {
             context.setToken(data.token);
 
             localStorage.setItem('token', data.token);
+            localStorage.setItem('role', data.role);
 
             navigate('/');
         }
@@ -53,51 +54,51 @@ const Login = () => {
                         </div>
                         <div className="card shadow-lg">
                             <div className="card-body p-5">
-                                <h1 className="fs-4 card-title fw-bold mb-4">Login</h1>
+                                <h1 className="fs-4 card-title fw-bold mb-4">Đăng nhập</h1>
                                 <form method="POST" className="needs-validation">
                                     <div className="mb-3">
-                                        <label className="mb-2 text-muted">E-Mail</label>
-                                        <input id="email" type="email" className="form-control" name="email" value={email} required onChange={(e) => setEmail(e.target.value)} />
+                                        <label className="mb-2 text-muted">Số điện thoại</label>
+                                        <input id="phone" type="phone" className="form-control" name="phone" value={phone} required onChange={(e) => setPhone(e.target.value)} />
                                         <div className="invalid-feedback">
-                                            Email invalid
+                                            Số điện thoại không hợp lệ
                                         </div>
                                     </div>
 
                                     <div className="mb-3">
                                         <div className="mb-2 w-100">
-                                            <label className="text-muted">Password</label>
+                                            <label className="text-muted">Mật khẩu</label>
                                             {/* <a href="forgot.html" className="float-end">
                                                 Quên mật khẩu?
                                             </a> */}
                                         </div>
                                         <input id="password" type="password" className="form-control" name="password" value={password} required onChange={(e) => setPassword(e.target.value)} />
                                         <div className="invalid-feedback">
-                                            Password invalid
+                                            Mật khẩu không hợp lệ
                                         </div>
                                     </div>
 
                                     <div className="d-flex align-items-center">
-                                        {/* <div className="form-check">
+                                        <div className="form-check">
                                             <input type="checkbox" name="remember" id="remember" className="form-check-input" onChange={handleRememberOnChange} />
                                             <label className="form-check-label">Ghi nhớ đăng nhập</label>
-                                        </div> */}
+                                        </div>
                                         <button type="button" onClick={handleLogin} className="btn btn-primary ms-auto">
-                                            Login
+                                            Đăng nhập
                                         </button>
                                     </div>
 
                                     <hr className="my-4" />
-
+{/* 
                                     <div className="d-flex justify-content-center mt-3">
                                         <a href="/register" className="text-muted">
                                             Don't have an account? Register now
                                         </a>
-                                    </div>
+                                    </div> */}
                                 </form>
                             </div>
                         </div>
                         <div className="text-center mt-5 text-muted">
-                            Copyright &copy; 2024 &mdash; PeachHotel
+                            Copyright &copy; 2025 &mdash; CafewFen
                         </div>
                     </div>
                 </div>

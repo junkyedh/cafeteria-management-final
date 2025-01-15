@@ -1,8 +1,9 @@
+@import "../../scss/variables";
 .container-fluid {
     padding: 20px;
   
     .h3, .h4 {
-      color: #333;
+      color: get-color($primary, "100");
       font-weight: bold;
       margin-top: 10px;
     }
@@ -14,7 +15,7 @@
       transition: background-color 0.3s ease;
   
       &:hover {
-        background-color: #1890ff;
+        background-color: get-color($primary, "200");
         color: #fff;
       }
     }
@@ -58,7 +59,7 @@
           padding: 8px;
   
           &:focus {
-            border-color: #1890ff;
+            border-color: get-color($primary, "200");
             box-shadow: 0 0 5px rgba(24, 144, 255, 0.5);
           }
           .ant-picker-input{
@@ -109,7 +110,7 @@
         transition: border-color 0.3s ease;
   
         &:focus {
-          border-color: #40a9ff;
+          border-color: get-color($primary, "200");
           box-shadow: 0 0 8px rgba(64, 169, 255, 0.2);
         }
 
