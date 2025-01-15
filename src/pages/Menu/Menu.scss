@@ -1,15 +1,15 @@
 .menu-container {
     display: flex;
-  }
-  
-  .menu-left {
+}
+
+.menu-left {
     flex: 1;
     padding: 20px;
     border-right: 1px solid #ddd;
     max-width: 70%;
-  }
-  
-  .menu-right {
+}
+
+.menu-right {
     flex: 1;
     padding: 20px;
     max-width: 400px;
@@ -20,38 +20,47 @@
     display: flex;
     flex-direction: column;
     background-color: #f0f4f8;
-  }
-  
-  .menu-title {
+}
+
+.menu-title {
     font-size: 36px;
     font-weight: bold;
     text-align: center;
     color: #2f4156;
     margin-bottom: 20px;
     background-color: #f0f4f8;
-  }
-  
-  .category-filter {
+}
+
+// .category-filter {
+//     margin-bottom: 20px;
+//     display: flex;
+//     justify-content: space-around;
+// }
+
+.category-filter {
+    display: flex; /* Hiển thị các phần tử con theo hàng ngang */
+    gap: 3px; /* Khoảng cách giữa các nút */
+    flex-wrap: wrap; /* Đảm bảo nút không tràn khi màn hình nhỏ */
+    //margin-top: 10px; /* Khoảng cách giữa bộ lọc và phần tử phía trên (nếu cần) */
+    margin-bottom: 10px;
+    justify-content: center;
+}
+
+.search-input {
     margin-bottom: 20px;
-    display: flex;
-    justify-content: space-around;
-  }
-  
-  .search-input {
-    margin-bottom: 20px;
-  }
-  
-  .product-cards {
+}
+
+.product-cards {
     display: flex;
     flex-wrap: wrap;
     gap: 16px;
-  }
+}
 
-  .ant-card-body {
+.ant-card-body {
     display: flex !important;
-  }
-  
-  .product-card {
+}
+
+.product-card {
     display: flex;
     width: 48%; // Card chiếm 48% chiều rộng màn hình
     max-width: 48%;
@@ -60,28 +69,31 @@
     border: 1px solid #e0e0e0;
     border-radius: 8px;
     overflow: hidden;
-  
 
-  .product-card h3 {
-    font-weight: bold; // Đảm bảo chữ in đậm
-    font-size: 16px;   // Có thể tùy chỉnh kích thước
-    margin: 10px 0;    // Khoảng cách trên và dưới
-}
+
+    .product-card h3 {
+        font-weight: bold; // Đảm bảo chữ in đậm
+        font-size: 16px; // Có thể tùy chỉnh kích thước
+        margin: 10px 0; // Khoảng cách trên và dưới
+    }
+
     .product-image {
         width: 130px; // Phần hình ảnh chiếm 40% chiều ngang card
         height: 130px; // Chiều cao đầy đủ của card
         background-color: #f0f0f0;
         left: 0px;
+
         img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover; // Tự động căn hình ảnh theo khung
+            width: 100%;
+            height: 100%;
+            object-fit: cover; // Tự động căn hình ảnh theo khung
         }
-  }
-//   .product-image {
-//     width: 100%;
-//     height: auto;
-//   }
+    }
+
+    //   .product-image {
+    //     width: 100%;
+    //     height: auto;
+    //   }
     .product-info {
         width: 60%; // Phần thông tin chiếm 60% còn lại
         right: 0px;
@@ -90,135 +102,190 @@
         flex-direction: column;
         justify-content: space-between;
     }
-  .size-options,
-  .hot-cold-options {
-    margin-top: 5px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px; /* Ensures buttons are spaced evenly */
-    padding-left: 30px;
-  }
-  
-  .size-button {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%; /* Make buttons circular */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #f0f4f8;
-    border: 1px solid #2f4156;
-    cursor: pointer;
-  }
 
-  .mood-button {
-    width: 45px;
-    height: 30px;
-    border-radius: 50%; /* Make buttons circular */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #f0f4f8;
-    border: 1px solid #2f4156;
-    cursor: pointer;
-  }
-  .size-button.selected,
-  .mood-button.selected {
-    background-color: #2f4156;
-    color: white;
-  }
-  
-  .select-button {
-    width: 60px;
-    margin-top: 5px;
-    background-color: #2f4156;
-    color: white;
-    position: absolute;
-    right: 25px;
-  }
+    .size-options,
+    .hot-cold-options {
+        margin-top: 5px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        /* Ensures buttons are spaced evenly */
+        padding-left: 30px;
+    }
+
+    .size-button {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        /* Make buttons circular */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f0f4f8;
+        border: 1px solid #2f4156;
+        cursor: pointer;
+    }
+
+    .mood-button {
+        width: 45px;
+        height: 30px;
+        border-radius: 50%;
+        /* Make buttons circular */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f0f4f8;
+        border: 1px solid #2f4156;
+        cursor: pointer;
+    }
+
+    .size-button.selected,
+    .mood-button.selected {
+        background-color: #2f4156;
+        color: white;
+    }
+
+    .select-button {
+        width: 60px;
+        margin-top: 5px;
+        background-color: #2f4156;
+        color: white;
+        position: absolute;
+        right: 25px;
+    }
 }
-  .order-items {
+
+.order-items {
     border-top: 1px solid #ddd;
     margin-top: 20px;
     padding-top: 20px;
-    flex-grow: 1; /* Allows this section to stretch and push the total section down */
-  }
-  
-  .order-list {
+    flex-grow: 1;
+    /* Allows this section to stretch and push the total section down */
+}
+
+.order-list {
     max-height: 300px;
     overflow-y: scroll;
-  }
-  
-  .order-item-card {
+}
+
+.order-item-card {
     display: flex;
     justify-content: space-between;
     margin-bottom: 10px;
-  }
-  
-  .remove-button {
+}
+
+.remove-button {
     color: red;
     width: 20px;
     height: 20px;
     cursor: pointer;
-  }
-  
-  .total-info {
+}
+
+.total-info {
     margin-top: 20px;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    position: sticky; /* Fix total and payment button to the bottom */
+    align-items: stretch;
+    /* Đảm bảo các mục chiếm toàn bộ chiều rộng */
+    position: sticky;
+    /* Giữ cố định ở cuối */
     bottom: 0;
     padding-top: 20px;
-    background-color: white; /* Ensure the section remains visible during scrolling */
+    background-color: white;
+    /* Nền trắng */
     z-index: 10;
-  }
-  
-  .quantity-controls {
+
+    .total-info-item {
+        display: flex;
+        justify-content: space-between;
+        /* Đẩy label và value về hai phía */
+        width: 100%;
+        /* Đảm bảo mục chiếm toàn bộ chiều ngang */
+        margin-bottom: 10px;
+        /* Khoảng cách giữa các dòng */
+    }
+
+    .label {
+        font-weight: bold;
+        /* Làm nổi bật nhãn */
+    }
+
+    .value {
+        text-align: right;
+        /* Đặt giá trị về phía phải */
+    }
+}
+
+.quantity-controls {
     display: flex;
     align-items: center;
-  }
-  
-  .quantity-controls span {
+}
+
+.quantity-controls span {
     margin: 0 10px;
-  }
-  
-  .quantity-controls button {
-    padding: 0 5px; /* Make the buttons smaller by reducing the padding */
-    font-size: 14px; /* Smaller font size */
-    width: 30px; /* Set a fixed width for smaller buttons */
-    height: 30px; /* Set a fixed height for smaller buttons */
-    border-radius: 50%; /* Keep the circular shape */
+}
+
+.quantity-controls button {
+    padding: 0 5px;
+    /* Make the buttons smaller by reducing the padding */
+    font-size: 14px;
+    /* Smaller font size */
+    width: 30px;
+    /* Set a fixed width for smaller buttons */
+    height: 30px;
+    /* Set a fixed height for smaller buttons */
+    border-radius: 50%;
+    /* Keep the circular shape */
     display: flex;
     align-items: center;
     justify-content: center;
     background-color: #f0f4f8;
     border: 1px solid #2f4156;
     cursor: pointer;
-  }
-  
-  .quantity-controls button:hover {
+}
+
+.quantity-controls button:hover {
     background-color: #2f4156;
     color: white;
-  }
-  
-  .button {
+}
+
+.button {
     width: 100%;
     padding: 10px;
     background-color: #2f4156;
     color: white;
     margin-top: 10px;
-  }
+}
 
-  .customer-info input {
+.customer-info input {
     margin-bottom: 10px;
-  }
-  
-  .order-item-image {
+}
+
+.order-item-image {
     width: 50px;
     height: 50px;
     object-fit: cover;
     margin-right: 10px;
-  }
-  
+}
+
+.sold-out {
+    font-size: 24px;
+    font-weight: bold;
+    color: red;
+    text-align: center;
+    position: absolute;
+    padding-top: 60px;
+    padding-left: 30px;
+}
+
+.category-filter .ant-btn {
+    background-color: #f0f4f8; // Màu nền của nút
+    color: #2f4156; // Màu chữ
+    border: 2px solid #C8D9E6; // Xóa đường viền của nút
+}
+
+.category-filter .ant-btn-primary {
+    background-color: #C8D9E6; // Màu nền của nút khi được chọn
+    color: #2f4156;
+}

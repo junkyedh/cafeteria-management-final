@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import imgDefault from '@/assets/coffee.png';
-import { Button, Input, Card, Radio, message } from 'antd';
+import { Button, Input, Modal, Select, Card, message, Pagination, AutoComplete, Form, DatePicker } from 'antd';
 import './Menu.scss';
 import { MainApiRequest } from '@/services/MainApiRequest';
+import { useNavigate } from "react-router-dom";
 
-const categories = ['All', 'Cà Phê', 'Trà', 'Trà Sữa', 'Nước Ép', 'Bánh'];
+const categories = ['All', 'Cafe', 'Trà', 'Trà sữa', 'Nước ép', 'Bánh'];
 const options = [
     { label: 'Mang đi', value: 'Mang đi' },
     { label: 'Tại chỗ', value: 'Tại chỗ' },
@@ -37,6 +38,13 @@ const Menu = () => {
     const [currentProductId, setCurrentProductId] = useState<string | null>(null);
     const [orderInfo, setOrderInfo] = useState<any | null>(null);
     const [phone, setPhone] = useState("");
+    const [name, setName] = useState('');
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [form] = Form.useForm();
+    const [suggestions, setSuggestions] = useState<{ phone: string, name: string }[]>([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const pageSize = 6;
+    const navigate = useNavigate();
 
     const fetchMenuList = async () => {
         try {
@@ -76,6 +84,27 @@ const Menu = () => {
     ).filter((product) =>
         product.name.toLowerCase().includes(search.toLowerCase())
     );
+
+    const fetchCustomerSuggestions = async (value: string) => {
+        if (value.length > 0) {  // Đảm bảo rằng chỉ gọi API khi có ít nhất một ký tự
+            try {
+                const response = await MainApiRequest.get(`/customer/search?phone=${value}`);
+                setSuggestions(response.data);  // Lưu kết quả trả về từ API
+            } catch (error) {
+                console.error('Error fetching customer suggestions:', error);
+            }
+        } else {
+            setSuggestions([]);
+        }
+    };
+
+    const handleSelectCustomer = (value: string) => {
+        setPhone(value);  // Set the phone value from the selected suggestion
+    };
+
+    const handleOpenModal = () => {
+        setIsModalVisible(true);
+    };
 
     const handleSelectSize = (id: string, size: string) => {
         // Nếu chọn sản phẩm mới, reset size và mood của sản phẩm khác
@@ -136,7 +165,28 @@ const Menu = () => {
         }
     };
 
+    const handleCloseModal = () => {
+        setIsModalVisible(false);
+        form.resetFields(); // Reset form khi đóng modal
+    };
 
+    const handleSubmit = async (values: any) => {
+        try {
+            const formattedValues = {
+                ...values,
+                registrationDate: values.registrationDate
+                    ? values.registrationDate.toISOString() // Định dạng ngày thành chuỗi ISO
+                    : null,
+            };
+
+            await MainApiRequest.post('/customer', formattedValues);
+            message.success('Customer added successfully!');
+            handleCloseModal();
+        } catch (error) {
+            console.error('Error adding customer:', error);
+            message.error('Failed to add customer.');
+        }
+    };
 
     const handleRemoveItem = (id: string, size: string, mood: string) => {
         const actualMood = mood || ''; // Nếu mood không tồn tại, sử dụng chuỗi rỗng
@@ -183,18 +233,40 @@ const Menu = () => {
         });
     };
 
+    const updateCustomerTotal = async (phone: string, currentBillTotal: number) => {
+        try {
+            // Lấy tổng chi tiêu hiện tại
+            const response = await MainApiRequest.get(`/customer/${phone}`);
+            const customer = response.data;
+    
+            if (!customer) {
+                console.error("Customer not found");
+                return;
+            }
+    
+            const updatedTotal = (customer.total || 0) + currentBillTotal;
+    
+            // Cập nhật tổng chi tiêu
+            await MainApiRequest.put(`/customer/total/${phone}`, { total: updatedTotal });
+    
+            console.log("Customer total updated successfully!");
+        } catch (error) {
+            console.error("Failed to update customer total:", error);
+        }
+    };
+
     const handlePayment = async () => {
         try {
             // Thông tin cần thiết để cập nhật order_tb
             const totalQuantity = Object.values(order).reduce((total, item) => total + item.quantity, 0);
             const totalPrice = Object.values(order).reduce((total, item) => total + item.price * item.quantity, 0);
             const status = "Đang chuẩn bị"; // Trạng thái đơn hàng sau khi thanh toán
-    
+
             // Gửi từng sản phẩm vào order_details
             for (const [productKey, orderItem] of Object.entries(order)) {
                 const { size, mood, quantity } = orderItem;
                 const [productID] = productKey.split("-");
-    
+
                 await MainApiRequest.post(`/order/detail/${orderInfo.id}`, {
                     orderID: orderInfo.id,
                     productID,
@@ -203,7 +275,7 @@ const Menu = () => {
                     quantity_product: quantity,
                 });
             }
-    
+
             // Cập nhật thông tin đơn hàng trong order_tb
             await MainApiRequest.put(`/order/${orderInfo.id}`, {
                 phone,
@@ -217,7 +289,7 @@ const Menu = () => {
                 // Lấy thông tin bàn từ API
                 const tableResponse = await MainApiRequest.get(`/table/${orderInfo.tableID}`);
                 const tableData = tableResponse.data;
-    
+
                 await MainApiRequest.put(`/table/${orderInfo.tableID}`, {
                     status: "Occupied", // Cập nhật trạng thái bàn
                     phoneOrder: phone, // Lấy từ state
@@ -227,12 +299,34 @@ const Menu = () => {
                 });
             }
     
+            // Gọi hàm cập nhật tổng chi tiêu cho khách hàng
+            await updateCustomerTotal(phone, totalPrice);
+
             alert("Thanh toán thành công!");
+            navigate("/order/list");
         } catch (error) {
             console.error("Error during payment:", error);
             alert("Có lỗi xảy ra khi thanh toán!");
         }
     };
+
+    const handleSelect = (value: string) => {
+        // Khi chọn một số điện thoại, tìm khách hàng từ danh sách gợi ý và điền tên vào input
+        const selectedCustomer = suggestions.find((customer) => customer.phone === value);
+        if (selectedCustomer) {
+            setPhone(selectedCustomer.phone);  // Cập nhật số điện thoại vào ô nhập số điện thoại
+            setName(selectedCustomer.name);    // Cập nhật tên vào ô nhập tên
+        }
+    };
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
+
+    const currentProducts = filteredProducts.slice(
+        (currentPage - 1) * pageSize,
+        currentPage * pageSize
+    );
 
     return (
         <div className="menu-container">
@@ -256,86 +350,101 @@ const Menu = () => {
                     onChange={(e) => setSearch(e.target.value)}
                 />
                 <div className="product-cards" >
-                    {filteredProducts.map((product) => (
+                    {currentProducts.map((product) => (
                         <Card key={product.id} className="product-card">
                             <div className="product-image" >
                                 <img src={product.imageurl} alt={product.name} />
                             </div>
                             <div className='product-info'>
-                                <h3 style={{ fontWeight: 'bold', top: 0 }}>{product.name}</h3>
-                                <div className="size-options">
-                                    {product.sizes && (
-                                        <Button
-                                            key="S"
-                                            className={`size-button ${selectedSizes[product.id] === 'S' ? 'selected' : ''}`}
-                                            onClick={() => handleSelectSize(product.id, 'S')}
-                                        >
-                                            S
-                                        </Button>
-                                    )}
-                                    {product.sizem && (
-                                        <Button
-                                            key="M"
-                                            className={`size-button ${selectedSizes[product.id] === 'M' ? 'selected' : ''}`}
-                                            onClick={() => handleSelectSize(product.id, 'M')}
-                                        >
-                                            M
-                                        </Button>
-                                    )}
-                                    {product.sizel && (
-                                        <Button
-                                            key="L"
-                                            className={`size-button ${selectedSizes[product.id] === 'L' ? 'selected' : ''}`}
-                                            onClick={() => handleSelectSize(product.id, 'L')}
-                                        >
-                                            L
-                                        </Button>
-                                    )}
-                                </div>
+                                <h3 style={{ fontWeight: 'bold' }}>{product.name}</h3>
+                                {product.available ? (
+                                    <>
+                                        <div className="size-options">
+                                            {product.sizes && (
+                                                <Button
+                                                    key="S"
+                                                    className={`size-button ${selectedSizes[product.id] === 'S' ? 'selected' : ''}`}
+                                                    onClick={() => handleSelectSize(product.id, 'S')}
+                                                >
+                                                    S
+                                                </Button>
+                                            )}
+                                            {product.sizem && (
+                                                <Button
+                                                    key="M"
+                                                    className={`size-button ${selectedSizes[product.id] === 'M' ? 'selected' : ''}`}
+                                                    onClick={() => handleSelectSize(product.id, 'M')}
+                                                >
+                                                    M
+                                                </Button>
+                                            )}
+                                            {product.sizel && (
+                                                <Button
+                                                    key="L"
+                                                    className={`size-button ${selectedSizes[product.id] === 'L' ? 'selected' : ''}`}
+                                                    onClick={() => handleSelectSize(product.id, 'L')}
+                                                >
+                                                    L
+                                                </Button>
+                                            )}
+                                        </div>
 
-                                {(product.hot || product.cold) && (
-                                    <div className="hot-cold-options">
-                                        {product.hot && (
-                                            <Button
-                                                className={`mood-button ${selectedMoods[product.id] === 'Nóng' ? 'selected' : ''}`}
-                                                onClick={() => handleSelectMood(product.id, 'Nóng')}
-                                            >
-                                                Nóng
-                                            </Button>
+                                        {(product.hot || product.cold) && (
+                                            <div className="hot-cold-options">
+                                                {product.hot && (
+                                                    <Button
+                                                        className={`mood-button ${selectedMoods[product.id] === 'Nóng' ? 'selected' : ''}`}
+                                                        onClick={() => handleSelectMood(product.id, 'Nóng')}
+                                                    >
+                                                        Nóng
+                                                    </Button>
+                                                )}
+                                                {product.cold && (
+                                                    <Button
+                                                        className={`mood-button ${selectedMoods[product.id] === 'Lạnh' ? 'selected' : ''}`}
+                                                        onClick={() => handleSelectMood(product.id, 'Lạnh')}
+                                                    >
+                                                        Lạnh
+                                                    </Button>
+                                                )}
+                                            </div>
                                         )}
-                                        {product.cold && (
+                                        <div style={{ display: 'flex' }}>
+                                            <div className="price" style={{ bottom: 0, paddingRight: 10, paddingTop: 10 }}>
+                                                Giá: {selectedSizes[product.id] === 'M'
+                                                    ? product.price + product.upsize
+                                                    : selectedSizes[product.id] === 'L'
+                                                        ? product.price + product.upsize * 2
+                                                        : product.price}
+                                            </div>
                                             <Button
-                                                className={`mood-button ${selectedMoods[product.id] === 'Lạnh' ? 'selected' : ''}`}
-                                                onClick={() => handleSelectMood(product.id, 'Lạnh')}
+                                                className="select-button"
+                                                onClick={() => handleAddToOrder(product.id, selectedSizes[product.id])}
+                                                disabled={
+                                                    !selectedSizes[product.id] ||
+                                                    (product.hot || product.cold) && !selectedMoods[product.id]
+                                                }
                                             >
-                                                Lạnh
+                                                Chọn
                                             </Button>
-                                        )}
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="sold-out">
+                                        <span>Sold Out</span>
                                     </div>
                                 )}
-                                <div style={{ display: 'flex' }}>
-                                    <div className="price" style={{ bottom: 0, paddingRight: 10, paddingTop: 10 }}>
-                                        Giá: {selectedSizes[product.id] === 'M'
-                                            ? product.price + product.upsize
-                                            : selectedSizes[product.id] === 'L'
-                                                ? product.price + product.upsize * 2
-                                                : product.price}
-                                    </div>
-                                    <Button
-                                        className="select-button"
-                                        onClick={() => handleAddToOrder(product.id, selectedSizes[product.id])}
-                                        disabled={
-                                            !selectedSizes[product.id] ||
-                                            (product.hot || product.cold) && !selectedMoods[product.id]
-                                        }
-                                    >
-                                        Chọn
-                                    </Button>
-                                </div>
                             </div>
                         </Card>
                     ))}
                 </div>
+                <Pagination
+                    current={currentPage}
+                    pageSize={pageSize}
+                    total={filteredProducts.length}
+                    onChange={handlePageChange}
+                    showSizeChanger={false} // Bạn có thể bật nếu muốn thay đổi kích thước trang
+                />
             </div>
 
             <div className="menu-right">
@@ -351,10 +460,80 @@ const Menu = () => {
                     </label>
                 </div>
                 <div className="customer-info">
-                    <Input placeholder="Số điện thoại khách hàng" value={phone} onChange={(e) => setPhone(e.target.value)}/>
-                    <Input placeholder="Tên khách hàng" />
+                    <Button onClick={handleOpenModal}><i className='fas fa-user-plus'></i></Button>
+                    <Modal
+                        title="Thêm mới khách hàng"
+                        visible={isModalVisible}
+                        onCancel={handleCloseModal}
+                        footer={null}
+                    >
+                        <Form
+                            form={form}
+                            layout="vertical"
+                            onFinish={handleSubmit}
+                            initialValues={{ gender: 'male' }}
+                        >
+                            <Form.Item
+                                name="name"
+                                label="Tên"
+                                rules={[{ required: true, message: 'Please enter the name' }]}
+                            >
+                                <Input/>
+                            </Form.Item>
+
+                            <Form.Item
+                                name="phone"
+                                label="Số điện thoại"
+                                rules={[
+                                    { required: true, message: 'Please enter the phone number' },
+                                    { pattern: /^[0-9]+$/, message: 'Please enter a valid phone number' },
+                                ]}
+                            >
+                                <Input/>
+                            </Form.Item>
+
+                            <Form.Item name="gender" label="Giới tính">
+                                <Select>
+                                    <Select.Option value="Nam">Nam</Select.Option>
+                                    <Select.Option value="Nữ">Nữ</Select.Option>
+                                    <Select.Option value="Khác">Khác</Select.Option>
+                                </Select>
+                            </Form.Item>
+                            <Form.Item
+                                name="registrationDate"
+                                label="Ngày đăng ký"
+                                rules={[{ required: true, message: 'Please select the registration date' }]}
+                            >
+                                <DatePicker style={{ width: '100%' }} />
+                            </Form.Item>
+                            <Form.Item>
+                                <Button type="primary" htmlType="submit">
+                                    Submit
+                                </Button>
+                                <Button style={{ marginLeft: '10px' }} onClick={handleCloseModal}>
+                                    Cancel
+                                </Button>
+                            </Form.Item>
+                        </Form>
+                    </Modal>
+                    <AutoComplete
+                        value={phone}
+                        onChange={(value) => {
+                            setPhone(value);  // Cập nhật giá trị ô input
+                            fetchCustomerSuggestions(value);  // Tìm kiếm khi người dùng thay đổi giá trị
+                        }}
+                        onSelect={handleSelect}
+                        options={suggestions.map((suggestion) => ({
+                            value: suggestion.phone,  // Giá trị hiển thị là số điện thoại
+                            label: `${suggestion.phone} - ${suggestion.name}`,  // Hiển thị số điện thoại và tên
+                        }))}
+                        placeholder="Số điện thoại khách hàng"
+                    >
+                        <Input style={{ width: 357 }} />
+                    </AutoComplete>
+                    <Input placeholder="Tên khách hàng" value={name} />
                     <Input placeholder="Ngày cập nhật" disabled value={new Date().toLocaleString()} />
-                    <Button><i className='fas fa-user-plus'></i></Button>
+
                 </div>
                 <div className="order-items">
                     <h3>Món Đã Đặt</h3>
@@ -389,15 +568,15 @@ const Menu = () => {
                     </div>
                 </div>
                 <div className="total-info">
-                    <div>
-                        <span>Tổng số món: </span>
-                        <span>
+                    <div className="total-info-item">
+                        <span className="label">Tổng số món:</span>
+                        <span className="value">
                             {Object.values(order).reduce((total, item) => total + item.quantity, 0)}
                         </span>
                     </div>
-                    <div>
-                        <span>Tổng tiền: </span>
-                        <span>
+                    <div className="total-info-item">
+                        <span className="label">Tổng tiền:</span>
+                        <span className="value" style={{ fontWeight: 'bold' }}>
                             {Object.values(order).reduce(
                                 (total, item) => total + item.price * item.quantity,
                                 0
@@ -407,7 +586,7 @@ const Menu = () => {
                     <Button className="button" onClick={handlePayment}>Thanh Toán</Button>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 
