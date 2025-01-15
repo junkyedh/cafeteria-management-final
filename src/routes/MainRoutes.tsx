@@ -1,6 +1,5 @@
 import "@/App.scss";
 import { useSystemContext } from "@/hooks/useSystemContext";
-import Login from "@/pages/Login/Login";
 import { useEffect } from "react";
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
@@ -18,6 +17,7 @@ import Statistic from "@/pages/Statistic/Statistic";
 import TableOrder from "@/pages/TableOrder/TableOrder";
 import Menu from "@/pages/Menu/Menu";
 import { routePath } from "@/layouts/Navbar/Navbar";
+import Login from "@/pages/Login/Login";
 
 export default function MainRoutes() {
 
