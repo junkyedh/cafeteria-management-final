@@ -241,7 +241,9 @@ const CustomerList = () => {
                     { title: 'Giới tính', dataIndex: 'gender', key: 'gender' },
                     { title: 'Số điện thoại', dataIndex: 'phone', key: 'phone' },
                     { title: 'Tổng chi tiêu', dataIndex: 'total', key: 'total',
-                        render: (total: number) => (total ? total : 0),
+                       
+                        render: (total: number) => total ? new Intl.NumberFormat('vi-VN',
+                             { style: 'currency', currency: 'VND' }).format(total).replace('₫', 'đ') : '0đ'
                      },
                     { title: 'Hạng thành viên', dataIndex: 'rank', key: 'rank',
                         render: (rank: string) => (rank ? rank : 'Thường'),
@@ -326,8 +328,16 @@ const CustomerList = () => {
                 columns={[
                     { title: 'ID', dataIndex: 'id', key: 'id' },
                     { title: 'Hạng thành viên', dataIndex: 'rank', key: 'rank' },
-                    { title: 'Hạn mức chi tiêu', dataIndex: 'mprice', key: 'mprice' },
-                    { title: 'Hạng mức giảm giá', dataIndex: 'discount', key: 'discount' },
+                    { title: 'Hạn mức chi tiêu', dataIndex: 'mprice', key: 'mprice',
+                        render: (mprice: number) => mprice ? new Intl.NumberFormat('vi-VN',
+                             { style: 'currency', currency: 'VND' }).format(mprice).replace('₫', 'đ') : '0đ'
+                     },
+ 
+                        
+                    { title: 'Hạng mức giảm giá', dataIndex: 'discount', key: 'discount',
+                        render: (discount: number) => discount ? new Intl.NumberFormat('vi-VN',
+                            { style: 'currency', currency: 'VND' }).format(discount).replace('₫', 'đ') : '0đ'
+                        },
                     {
                         title: 'Hành động',
                         key: 'actions',

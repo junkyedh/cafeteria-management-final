@@ -222,8 +222,11 @@ const StaffList = () => {
 
                      },
                     { title: 'Lương', dataIndex: 'salary', key: 'salary',
-                        // toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
-                        render: (salary: number) => salary.toLocaleString("vi-VN", { style: "currency", currency: "VND" }),
+                        // const formatCurrency = (value: number) =>
+                        //     new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
+                        //     .format(value)
+                        //     .replace('₫', 'đ'); // Thay đổi ký hiệu để phù hợp với VNĐ
+                        render: (salary: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(salary)
                      },
                     {
                         title: 'Ngày bắt đầu',

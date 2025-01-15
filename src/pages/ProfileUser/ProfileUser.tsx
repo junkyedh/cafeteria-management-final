@@ -69,7 +69,7 @@ const ProfileUser = () => {
 
   return (
     <div className="container-fluid m-2">
-      <h2 className='h2 header-custom'>Thông tin của tôi</h2>
+      <h2 className='h2 header-custom'>THÔNG TIN CỦA TÔI</h2>
       <Container fluid className="profile-container">
         <Row className="profile-content">
           <Col md={4} className="profile-sidebar text-center">

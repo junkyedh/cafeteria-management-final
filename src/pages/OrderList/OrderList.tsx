@@ -94,14 +94,14 @@ export const OrderList = () =>{
     message.success('Xuất danh sách đơn hàng thành công.');
   };
 
-  const mappingColor = (status: string) => {
-    switch (status) {
-      case 'Đang chuẩn bị': return 'purple';
-      case 'Hoàn thành': return 'green';
-      case 'Đã huỷ': return 'red';
-      default: return 'black';
-    }
-  }
+  // const mappingColor = (status: string) => {
+  //   switch (status) {
+  //     case 'Đang chuẩn bị': return 'purple';
+  //     case 'Hoàn thành': return 'green';
+  //     case 'Đã huỷ': return 'red';
+  //     default: return 'black';
+  //   }
+  // }
 
   const onConfirmOrder = async (record: any) => {
     const id = record.id;
@@ -181,8 +181,18 @@ export const OrderList = () =>{
             sorter: (a,b) => a.status.localeCompare(b.status),
             title: 'Trạng thái', dataIndex: 'status', key: 'status', 
             render: (status: string) => {
-              return <Tag color={mappingColor(status)}>{status}</Tag>
-            }
+              let color = '';
+              if (status === "Đang chuẩn bị") {
+                color = 'purple';
+              } else if (status === "Hoàn thành") {
+                color = 'green';
+              } else if (status === "Đã hủy") {
+                color = 'red';
+              } else {
+                color = 'default'; // Màu mặc định nếu trạng thái không xác định
+              }
+              return <Tag color={color}>{status}</Tag>;
+            },
           },
           {
             title: 'Hành động',

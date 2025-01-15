@@ -308,13 +308,15 @@ const Promote = () => {
                     showSizeChanger: true, // Hiển thị tùy chọn thay đổi số item trên mỗi trang
                      // Các tùy chọn cho số item mỗi trang
                     }
-                }                
+                }    
+                            
                 columns={[
                     { title: 'Tên khuyến mãi', dataIndex: 'name', key: 'name' },
                     { title: 'Mô tả', dataIndex: 'description', key: 'description' },
                     { title: 'Giảm giá', dataIndex: 'discount', key: 'discount',
                         render: (discount: number, record) => {
-                            return record.promoteType === 'Phần trăm' ? `${discount}%` : `${discount}đ`;
+                            return record.promoteType === 'Phần trăm' ? `${Math.round(discount)}%` : 
+                            new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(discount));
                         }
                      },
                     { title: 'Loại', dataIndex: 'promoteType', key: 'promoteType'},

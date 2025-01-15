@@ -314,9 +314,9 @@ const ProductList = () => {
           {
             title: 'Giá', key: 'price', render: (_, record) => (
               <div>
-                <div>Size S: {record.price}</div>
-                <div>Size M: {record.price + record.upsize}</div>
-                <div>Size L: {record.price + record.upsize * 2}</div>
+                <p>Size S: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(record.price)}</p>
+                <p>Size M: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(record.price + (record.upsize || 0))}</p>
+                <p>Size L: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(record.price + (record.upsize || 0) * 2)}</p>
               </div>
             ),
           },
@@ -324,7 +324,7 @@ const ProductList = () => {
           {
             title: 'Trạng thái', dataIndex: 'available', key: 'available', 
             render: (available) => (
-              <span style= {{ color: available ? 'green' : 'red' }}>
+              <span style= {{ color: available ? 'green' : 'orange' }}>
                 {available ? 'Đang bán' : 'Hết hàng'}
               </span>
             ),
@@ -350,8 +350,8 @@ const ProductList = () => {
                 <Button 
                   type="default" 
                   style={{
-                    color: record.available ? 'red' : 'green',
-                    borderColor: record.available ? 'red' : 'green',
+                    color: record.available ? 'orange' : 'green',
+                    borderColor: record.available ? 'orange' : 'green',
                   }}
                   onClick={() => onToggleProductStatus(record)}
                 >

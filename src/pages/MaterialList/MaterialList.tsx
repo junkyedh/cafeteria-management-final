@@ -161,7 +161,13 @@ const MaterialList = () => {
                     { title: 'Tên nguyên liệu', dataIndex: 'name', key: 'name' },
                     { title: 'Số lượng nhập', dataIndex: 'quantityImported', key: 'quantityImported' },
                     { title: 'Số lượng tồn', dataIndex: 'quantityStock', key: 'quantityStock' },
-                    { title: 'Giá', dataIndex: 'price', key: 'price' },
+                    { title: 'Giá', dataIndex: 'price', key: 'price',
+                        // const formatCurrency = (value: number) =>
+                        //     new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
+                        //     .format(value)
+                        //     .replace('₫', 'đ'); // Thay đổi ký hiệu để phù hợp với VNĐ
+                        render: (price: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)
+                     },
                     { title: 'Loại bảo quản', dataIndex: 'storageType', key: 'storageType' },
                     { title: 'Ngày nhập', dataIndex: 'importDate', key: 'importDate',
                         render: (importDate: string) => (importDate ? moment(importDate).format('DD-MM-YYYY') : '-')
