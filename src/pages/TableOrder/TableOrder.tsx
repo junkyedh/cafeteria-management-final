@@ -53,9 +53,33 @@ const TableOrder = () => {
         }
     };
 
+    const handleChooseProduct = async (table: any, serviceType: "Dine In" | "Take Away") => {
+        try {
+            // Chuẩn bị dữ liệu đơn hàng thô
+            const orderData = {
+                phone: table?.phoneorder || null,
+                serviceType,
+                totalPrice: 0,
+                orderDate: new Date().toISOString(),
+                staffID: 1, // ID nhân viên mặc định
+                tableID: serviceType === "Dine In" ? table?.id : null,
+                status: "Đang chuẩn bị", // Trạng thái mặc định
+            };
+    
+            // Gửi yêu cầu tạo đơn hàng
+            await MainApiRequest.post("/order", orderData);
+    
+            message.success("Đơn hàng thô đã được tạo thành công!");
+            navigate("/order/place-order"); // Chuyển hướng sau khi tạo thành công
+        } catch (error) {
+            console.error("Error creating order:", error);
+            message.error("Không thể tạo đơn hàng!");
+        }
+    };
+
     const handleCompleteTable = async (table: any) => {
         try {
-            await MainApiRequest.put(`/table/${table.id}`);
+            await MainApiRequest.put(`/table/complete/${table.id}`);
             message.success(`Bàn ${table.id} đã hoàn tất!`);
             fetchTableList();
         } catch (error) {
@@ -63,17 +87,17 @@ const TableOrder = () => {
         }
     };
 
-    const handleDeleteTable = (tableId: string) => {
+    const handleDeleteTable = (tableId: number) => {
         Modal.confirm({
             title: "Bạn có chắc chắn muốn xóa bàn này?",
             onOk: () => {
                 console.log("Xóa bàn:", tableId);
-                // Gọi API hoặc cập nhật state để xóa bàn
+                MainApiRequest.delete(`/table/${tableId}`)
             },
         });
     };
 
-    const handleEditTable = (tableId: string) => {
+    const handleEditTable = (tableId: number) => {
         console.log("Chỉnh sửa bàn:", tableId);
         // Hiển thị modal chỉnh sửa hoặc cập nhật thông tin
     };
@@ -94,7 +118,7 @@ const TableOrder = () => {
                 Danh Sách Bàn
             </h2>
             <div className="action-buttons">
-                <Button onClick={() => navigate("/order/place-order")}>
+                <Button onClick={() => handleChooseProduct(null, "Take Away")}>
                     Mang đi
                 </Button>
                 <Button>Tại chỗ</Button>
@@ -149,17 +173,17 @@ const TableOrder = () => {
                         <p>SĐT: {table.phoneorder}</p>
                         <Space>
                             {table.status === "Available" && (
-                                <Button type="primary" onClick={() => handleBookTable(table)}>
+                                <Button type="primary" onClick={() => handleChooseProduct(table, "Dine In")}>
                                     Chọn món
                                 </Button>
                             )}
                             {table.status === "Occupied" && (
-                                <Button danger onClick={() => handleCompleteTable(table)}>
+                                <Button className="ant-btn-red" onClick={() => handleCompleteTable(table)}>
                                     Hoàn tất
                                 </Button>
                             )}
                             {table.status === "Reserved" && (
-                                <Button danger onClick={() => handleCompleteTable(table)}>
+                                <Button className="ant-btn-orange" onClick={() => handleChooseProduct(table, "Dine In")}>
                                     Chọn món
                                 </Button>
                             )}

@@ -174,9 +174,8 @@ export const OrderList = () =>{
             title: 'Mã khách hàng', dataIndex: 'customerID', key: 'customerID', 
           },
           {
-            sorter: (a,b) => a.customerID.phone.localeCompare(b.customerID.phone),
-            title: 'Số điện thoại', dataIndex: 'customerID', key: 'phone',
-            render: (customer: any) => customer.phone,
+            sorter: (a,b) => a.phone.localeCompare(b.phone),
+            title: 'Số điện thoại', dataIndex: 'phone', key: 'phone',
           },
           {
             sorter: (a,b) => a.serviceType.localeCompare(b.serviceType),
@@ -192,8 +191,8 @@ export const OrderList = () =>{
             render: (orderDate: string) => moment(orderDate).format('DD-MM-YYYY HH:mm:ss')
           },
           {
-            sorter: (a,b) => a.staffID.localeCompare(b.staffID),
-            title: 'Nhân viên phục vụ', dataIndex: 'staffID', key: 'staffID', 
+            sorter: (a,b) => a.staffName.localeCompare(b.staffNname),
+            title: 'Nhân viên phục vụ', dataIndex: 'staffName', key: 'staffName', 
           },
           {
             sorter: (a,b) => a.status.localeCompare(b.status),

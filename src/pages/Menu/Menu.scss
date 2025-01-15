@@ -44,40 +44,65 @@
   .product-cards {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 16px;
+  }
+
+  .ant-card-body {
+    display: flex !important;
   }
   
   .product-card {
-    width: calc(33% - 10px);
-    padding: 10px;
-    border: 1px solid #ddd;
+    display: flex;
+    width: 48%; // Card chiếm 48% chiều rộng màn hình
+    max-width: 48%;
+    height: 180px; // Cố định chiều cao của card
     background-color: #f0f4f8;
-    text-align: center;
-    box-sizing: border-box;
-  }
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+  
 
   .product-card h3 {
     font-weight: bold; // Đảm bảo chữ in đậm
     font-size: 16px;   // Có thể tùy chỉnh kích thước
     margin: 10px 0;    // Khoảng cách trên và dưới
 }
-  .product-image {
-    width: 100%;
-    height: auto;
+    .product-image {
+        width: 130px; // Phần hình ảnh chiếm 40% chiều ngang card
+        height: 130px; // Chiều cao đầy đủ của card
+        background-color: #f0f0f0;
+        left: 0px;
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover; // Tự động căn hình ảnh theo khung
+        }
   }
-  
+//   .product-image {
+//     width: 100%;
+//     height: auto;
+//   }
+    .product-info {
+        width: 60%; // Phần thông tin chiếm 60% còn lại
+        right: 0px;
+        padding-left: 15px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
   .size-options,
   .hot-cold-options {
-    margin-top: 10px;
+    margin-top: 5px;
     display: flex;
     justify-content: center;
+    align-items: center;
     gap: 10px; /* Ensures buttons are spaced evenly */
+    padding-left: 30px;
   }
   
-  .size-button,
-  .mood-button {
-    width: 40px;
-    height: 40px;
+  .size-button {
+    width: 30px;
+    height: 30px;
     border-radius: 50%; /* Make buttons circular */
     display: flex;
     align-items: center;
@@ -86,7 +111,18 @@
     border: 1px solid #2f4156;
     cursor: pointer;
   }
-  
+
+  .mood-button {
+    width: 45px;
+    height: 30px;
+    border-radius: 50%; /* Make buttons circular */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0f4f8;
+    border: 1px solid #2f4156;
+    cursor: pointer;
+  }
   .size-button.selected,
   .mood-button.selected {
     background-color: #2f4156;
@@ -94,9 +130,14 @@
   }
   
   .select-button {
-    margin-top: 10px;
+    width: 60px;
+    margin-top: 5px;
+    background-color: #2f4156;
+    color: white;
+    position: absolute;
+    right: 25px;
   }
-  
+}
   .order-items {
     border-top: 1px solid #ddd;
     margin-top: 20px;
