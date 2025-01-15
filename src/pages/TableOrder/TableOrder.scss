@@ -82,18 +82,18 @@
         }
 
         &.available {
-            border: 2px solid #52c41a;
-            background-color: #f6ffed;
+            border: 2px solid #2ecc71;
+            background: linear-gradient(to bottom, #A9DFBF, #E8F8F5);
         }
 
         &.booked {
-            border: 2px solid #faad14;
-            background-color: #fffbe6;
+            border: 2px solid #ffa500;
+            background: linear-gradient(to bottom, #FFE4B2, #FFF8E1);
         }
 
         &.in-use {
-            border: 2px solid #ff4d4f;
-            background-color: #fff2f0;
+            border: 2px solid #cc2b2b;
+            background: linear-gradient(to bottom, #ff7070, #ffbcbc);
         }
     }
 
@@ -103,12 +103,12 @@
         font-weight: bold;
 
         &.ant-btn-primary {
-            background-color: #1890ff;
-            border-color: #1890ff;
+            background-color: #2ecc71;
+            border-color: #2ecc71;
 
             &:hover {
-                background-color: #40a9ff;
-                border-color: #40a9ff;
+                background-color: #9bffcf;
+                border-color: #2ecc71;
             }
         }
 
@@ -122,13 +122,26 @@
             }
         }
 
-        &.ant-btn-green {
-            background-color: #4eff98;
-            border-color: #34b568;
+        &.ant-btn-red {
+            color: white;
+            background-color: #cc2b2b;
+            border-color: #cc2b2b;
 
             &:hover {
-                background-color: #9bffcf;
-                border-color: #9bffcf;
+                color: #333;
+                background-color: #ff7777;
+                border-color: #cc2b2b;
+            }
+        }
+        &.ant-btn-orange {
+            color: white;
+            background-color: #ffa500;
+            border-color: #ffa500;
+
+            &:hover {
+                color: #333;
+                background-color: #f7daa4;
+                border-color: #ffa500;
             }
         }
     }
