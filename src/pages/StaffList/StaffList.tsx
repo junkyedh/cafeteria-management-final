@@ -3,6 +3,7 @@ import { Button, Form, Input, DatePicker, Modal, Table, Space, Popconfirm, messa
 import moment from 'moment';
 import "./StaffList.scss";
 import { MainApiRequest } from '@/services/MainApiRequest';
+import { start } from 'repl';
 
 const StaffList = () => {
     const [form] = Form.useForm();
@@ -12,48 +13,55 @@ const StaffList = () => {
     const [editingStaff, setEditingStaff] = useState<any | null>(null);
 
     const fetchStaffList = async () => {
+        try {
             const res = await MainApiRequest.get('/staff/list');
             setStaffList(res.data);
-        };
+        } catch (error) {
+            console.error('Error fetching staff list:', error);
+            message.error('Failed to fetch staff list. Please try again.');
+        }
+    };
 
     useEffect(() => {
         fetchStaffList();
     }, []);
 
     const onOpenCreateStaffModal = () => {
+        setEditingStaff(null);
+        form.setFieldsValue({});
         setOpenCreateStaffModal(true);
     }
 
     const onOKCreateStaff = async () => {
-        setOpenCreateStaffModal(false);
-        const formData = form.getFieldsValue();
-        
-        const data = {
-            ...formData,
-            birth: new Date().toISOString().split('T')[0],
-            startDate: moment().format('YYYY-MM-DD'),
-            workShiftID: 1,
-            workHours: 8,
-            salary: formData.salary || 0,
-            activeStatus: true,
-            roleID: 2,
-            password: "default123",
-        }
         try {
+            const data = form.getFieldsValue();
+            data.name = data.name || '';
+            data.gender = data.gender || '';
+            data.birth = data.birth ? data.birth.format('YYYY-MM-DD') : null;
+            data.startDate = moment().format('YYYY-MM-DD');
+            data.typeStaff = data.typeStaff || 'Nhân viên phục vụ';
+            data.workHours = data.workHours || 8; // Mặc định là 8 giờ nếu không nhập
+            //data.salary = data.minsalary * data.workHours; // Tính lương dựa trên giờ làm và lương cơ bản
+            data.activestatus = true;
+            data.roleid = 2;
+            data.password = editingStaff ? editingStaff.password : "default123";
+
             if (editingStaff) {
-                const { password, ...rest } = data; // Không gửi password khi edit
+                const {...rest } = data;
                 await MainApiRequest.put(`/staff/${editingStaff.id}`, rest);
             } else {
                 await MainApiRequest.post('/staff', data);
             }
+            console.log(data);
             fetchStaffList();
-            setEditingStaff(null);
+            setOpenCreateStaffModal(false);
             form.resetFields();
+            setEditingStaff(null);
         } catch (error) {
-            console.error("Failed to save staff:", error);
-            message.error("Thêm/chỉnh sửa nhân viên thất bại!");
+            console.error('Error creating/updating staff:', error);
+            message.error('Failed to create staff. Please try again.');
         }
-    };
+    }
 
     const onCancelCreateStaff = () => {
         setOpenCreateStaffModal(false);
@@ -61,15 +69,32 @@ const StaffList = () => {
         form.resetFields();
     };
 
-    const onEditStaff = (staff: any) => {
+    const onEditStaff = (staff:any) => {
         setEditingStaff(staff);
-        form.setFieldsValue(staff);
+        form.setFieldsValue({
+            name: staff.name || '',
+            gender: staff.gender || '',
+            birth: staff.birth ? moment(staff.birth, 'YYYY-MM-DD') : null,
+            phone: staff.phone || '',
+            typeStaff: staff.typeStaff || '',
+            workHours: staff.workHours || 0,
+            minsalary: staff.minsalary || 0,
+            password: staff.password || '',
+            startDate: staff.startDate ? moment(staff.startDate, 'YYYY-MM-DD') : null,
+            address: staff.address || ''
+        });
         setOpenCreateStaffModal(true);
-    };
+    }
 
     const onDeleteStaff = async (id: number) => {
-        await MainApiRequest.delete(`/staff/${id}`);
-        fetchStaffList();
+        try {
+            await MainApiRequest.delete(`/staff/${id}`);
+            fetchStaffList();
+            //message.success('Xóa nhân viên thành công!');
+        } catch (error) {
+            console.error('Error deleting staff:', error);
+            message.error('Failed to delete staff. Please try again.');
+        }
     };
 
     return (
@@ -101,8 +126,9 @@ const StaffList = () => {
                             rules={[{ required: true, message: "Please input gender!" }]}
                         >
                             <Select>
-                                <Select.Option value="Nam">Male</Select.Option>
-                                <Select.Option value="Nữ">Female</Select.Option>
+                                <Select.Option value="Nam">Nam</Select.Option>
+                                <Select.Option value="Nữ">Nữ</Select.Option>
+                                <Select.Option value="Khác">Khác</Select.Option>
                             </Select>
                         </Form.Item>
                     </div>
@@ -112,20 +138,8 @@ const StaffList = () => {
                             name="birth"
                             rules={[{ required: true, message: "Please input birthday!" }]}
                         >
-                            <DatePicker />
+                            <DatePicker showTime />
                         </Form.Item>
-                        <Form.Item
-                            label="Loại nhân viên"
-                            name="typeStaff"
-                            rules={[{ required: true, message: "Please input type staff!" }]}
-                        >
-                            <Select>
-                                <Select.Option value="Admin">Admin</Select.Option>
-                                <Select.Option value="Staff">Nhân viên</Select.Option>
-                            </Select>
-                        </Form.Item>
-                    </div>
-                    <div className="field-row">
                         <Form.Item
                             label="Số điện thoại"
                             name="phone"
@@ -133,21 +147,60 @@ const StaffList = () => {
                         >
                             <Input type="text" />
                         </Form.Item>
+                    </div>
+                    <div className="field-row">
                         <Form.Item
-                            label="Địa chỉ"
-                            name="address"
-                            rules={[{ required: true, message: "Please input address!" }]}
+                            label="Loại nhân viên"
+                            name="typeStaff"
+                            rules={[{ required: true, message: "Please input type staff!" }]}
                         >
-                            <Input type="text" />
+                            <Select>
+                                <Select.Option value="Quản lý">Quản lý</Select.Option>
+                                <Select.Option value="Nhân viên pha chế">Nhân viên pha chế</Select.Option>
+                                <Select.Option value="Nhân viên phục vụ">Nhân viên phục vụ</Select.Option>
+                                <Select.Option value="Thu ngân">Thu ngân</Select.Option>
+                                <Select.Option value="Bảo vệ">Bảo vệ</Select.Option>
+                            </Select>
                         </Form.Item>
                         <Form.Item
-                            label="Password"
+                            label="Số giờ làm việc"
+                            name="workHours"
+                            rules={[{ required: true, message: "Please input work hours!" }]}
+                        >
+                            <Input type="number" />
+                        </Form.Item>
+                    </div>
+                    <div className="field-row">
+                        <Form.Item
+                            label="Lương cơ bản"
+                            name="minsalary"
+                            rules={[{ required: true, message: "Please input base salary!" }]}
+                        >
+                            <Input type="number" />
+                        </Form.Item>
+                        <Form.Item
+                            label="Ngày bắt đầu"
+                            name="startDate"
+                            rules={[{ required: true, message: "Please input start date!" }]}
+                        >
+                            <DatePicker showTime/>
+                        </Form.Item>
+                    </div>
+                        <Form.Item
+                            label="Mật khẩu"
                             name="password"
                             rules={[{ required: true, message: "Please input password!" }]}
                         >
-                            <Input type="password" />
-                        </Form.Item>
-                    </div>
+                            <Input.Password/>
+                        </Form.Item >
+                    
+                    <Form.Item
+                        label="Địa chỉ"
+                        name="address"
+                        rules={[{ required: true, message: "Please input address!" }]}
+                    >
+                        <Input type="text" />
+                    </Form.Item>
                 </Form>
             </Modal>
             <Table
@@ -156,13 +209,31 @@ const StaffList = () => {
                     { title: 'ID', dataIndex: 'id', key: 'id' },
                     { title: 'Tên nhân viên', dataIndex: 'name', key: 'name' },
                     { title: 'Giới tính', dataIndex: 'gender', key: 'gender' },
-                    { title: 'Ngày sinh', dataIndex: 'birth', key: 'birth' },
+                    { title: 'Ngày sinh', dataIndex: 'birth', key: 'birth',                         
+                        render: (birth: string) => (birth ? moment(birth).format('DD-MM-YYYY') : '-')
+                    },
+                                      
                     { title: 'Loại nhân viên', dataIndex: 'typeStaff', key: 'typeStaff' },
                     { title: 'Số điện thoại', dataIndex: 'phone', key: 'phone' },
                     { title: 'Địa chỉ', dataIndex: 'address', key: 'address' },
-                    { title: 'Giờ làm việc', dataIndex: 'workHours', key: 'workHours' },
-                    { title: 'Lương', dataIndex: 'salary', key: 'salary' },
-                    { title: 'Ngày bắt đầu', dataIndex: 'startDate', key: 'startDate' },
+                    // { title: 'Lương cơ bản', dataIndex: 'minsalary', key: 'minsalary' },
+                    { title: 'Giờ làm việc', dataIndex: 'workHours', key: 'workHours',
+                        render: (workHours: number) => workHours + ' giờ',
+
+                     },
+                    { title: 'Lương', dataIndex: 'salary', key: 'salary',
+                        // const formatCurrency = (value: number) =>
+                        //     new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
+                        //     .format(value)
+                        //     .replace('₫', 'đ'); // Thay đổi ký hiệu để phù hợp với VNĐ
+                        render: (salary: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(salary)
+                     },
+                    {
+                        title: 'Ngày bắt đầu',
+                        dataIndex: 'startDate',
+                        key: 'startDate',
+                        render: (startDate: string) => (startDate ? moment(startDate).format('DD-MM-YYYY HH:mm:ss') : '-'),
+                    },
                     //{ title: 'Status', dataIndex: 'activestatus', key: 'activestatus' },
                     {
                         title: 'Hành động',

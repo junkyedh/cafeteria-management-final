@@ -85,7 +85,7 @@
   
         input, textarea{
           border-radius: 5px;
-          border: 1px solid #ccc;
+          //border: 1px solid #ccc;
           padding: 8px;
   
           &:focus {
@@ -195,21 +195,4 @@
         font-size: 14px;
       }
     }
-  }
-  .checkbox-group {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); // Số cột tự động thay đổi dựa vào kích thước màn hình
-    gap: 8px; // Khoảng cách giữa các feature
-    margin-top: 10px;
-  }
-  .features-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 4rem); // Chia thành 2 cột
-    justify-content: space-evenly; // Căn giữa các cột
-  }
-  
-  .feature-item {
-    display: flex;
-    align-items: center; // Căn giữa icon và text
-    white-space: nowrap; // Giữ text trên một dòng
   }

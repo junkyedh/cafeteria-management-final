@@ -1,18 +1,19 @@
 // import { LoadingOverlay } from 'react-loading-overlay';
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useSystemContext } from '@/hooks/useSystemContext';
+import { FaPhoneAlt, FaLock } from 'react-icons/fa';
 import { MainApiRequest } from '@/services/MainApiRequest';
+import './Login.scss';
 
 const Login = () => {
     const navigate = useNavigate();
     const context = useSystemContext();
-    const {
-        isLoggedIn,
-        token
-    } = context;
+    const { isLoggedIn, setToken } = context;
 
-    const [email, setEmail] = React.useState('');
+
+    const [phone, setPhone] = React.useState('');
     const [password, setPassword] = React.useState('');
     const [remember, setRemember] = React.useState(false);
 
@@ -21,88 +22,93 @@ const Login = () => {
     }
 
     const handleLogin = async () => {
-        const res = await MainApiRequest.post('/auth/signin', {
-            email,
-            password
-        });
+        try {
+            const res = await MainApiRequest.post('/auth/signin', { phone, password });
 
-        if (res.status === 200) {
-            const data = res.data;
-            context.setToken(data.token);
+            if (res.status === 200) {
+                const data = res.data;
+                setToken(data.token); // Lưu token vào context
 
-            localStorage.setItem('token', data.token);
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('role', data.user.role);
 
-            navigate('/');
+                // Điều hướng đến trang dashboard sau khi đăng nhập thành công
+                navigate('/order/choose-table');
+            }
+        } catch (error) {
+            console.error('Đăng nhập thất bại:', error);
         }
     }
 
     useEffect(() => {
-        if (!isLoggedIn && token) {
-            navigate('/');
+        if (isLoggedIn) {
+            navigate('/order/choose-table');
         }
     }, [isLoggedIn]);
 
     return (
-
-        <section className="h-100 bg-login">
-            <div className="container h-100">
-                <div className="row justify-content-sm-center h-100">
-                    <div className="col-xxl-4 col-xl-5 col-lg-5 col-md-7 col-sm-9">
-                        <div className="text-center my-5">
-                            <img src={require("@/assets/logo.jpg")} alt="logo" width="100" />
-                        </div>
-                        <div className="card shadow-lg">
-                            <div className="card-body p-5">
-                                <h1 className="fs-4 card-title fw-bold mb-4">Login</h1>
-                                <form method="POST" className="needs-validation">
-                                    <div className="mb-3">
-                                        <label className="mb-2 text-muted">E-Mail</label>
-                                        <input id="email" type="email" className="form-control" name="email" value={email} required onChange={(e) => setEmail(e.target.value)} />
-                                        <div className="invalid-feedback">
-                                            Email invalid
-                                        </div>
-                                    </div>
-
-                                    <div className="mb-3">
-                                        <div className="mb-2 w-100">
-                                            <label className="text-muted">Password</label>
-                                            {/* <a href="forgot.html" className="float-end">
-                                                Quên mật khẩu?
-                                            </a> */}
-                                        </div>
-                                        <input id="password" type="password" className="form-control" name="password" value={password} required onChange={(e) => setPassword(e.target.value)} />
-                                        <div className="invalid-feedback">
-                                            Password invalid
-                                        </div>
-                                    </div>
-
-                                    <div className="d-flex align-items-center">
-                                        {/* <div className="form-check">
-                                            <input type="checkbox" name="remember" id="remember" className="form-check-input" onChange={handleRememberOnChange} />
-                                            <label className="form-check-label">Ghi nhớ đăng nhập</label>
-                                        </div> */}
-                                        <button type="button" onClick={handleLogin} className="btn btn-primary ms-auto">
-                                            Login
-                                        </button>
-                                    </div>
-
-                                    <hr className="my-4" />
-
-                                    <div className="d-flex justify-content-center mt-3">
-                                        <a href="/register" className="text-muted">
-                                            Don't have an account? Register now
-                                        </a>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                        <div className="text-center mt-5 text-muted">
-                            Copyright &copy; 2024 &mdash; PeachHotel
-                        </div>
+        <div className="bg-login">
+            <motion.div
+                className="card"
+                initial={{ opacity: 0, y: -50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+            >
+                <h1>Đăng nhập</h1>
+                <form method="POST" className="needs-validation">
+                    <div className="my-3">
+                        <label htmlFor="phone" className="form-label">
+                            <FaPhoneAlt className="mx-3 me-2 my-2" /> Số điện thoại
+                        </label>
+                        <input
+                            type="phone"
+                            id="phone"
+                            className="form-control"
+                            name="phone"
+                            value={phone}
+                            placeholder="Nhập số điện thoại"
+                            required
+                            onChange={(e) => setPhone(e.target.value)}
+                        />
+                        <div className="invalid-feedback">Số điện thoại không hợp lệ</div>
                     </div>
-                </div>
-            </div>
-        </section>
+                    <div className="mb-4">
+                        <label htmlFor="password" className="form-label">
+                            <FaLock className="mx-3 me-2 mb-2" /> Mật khẩu
+                        </label>
+                        <input
+                            type="password"
+                            id="password"
+                            className="form-control"
+                            name="password"
+                            value={password}
+                            placeholder="Nhập mật khẩu"
+                            required
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
+                        <div className="invalid-feedback">Mật khẩu không hợp lệ</div>
+                    </div>
+                    <div className="d-flex align-items-center justify-content-between mb-3">
+                        <div>
+                            <input type="checkbox" id="remember" className="form-check-input" onChange={handleRememberOnChange} />
+                            <label htmlFor="remember" className="form-check-label ms-2 mt-1">
+                                Ghi nhớ đăng nhập
+                            </label>
+                        </div>
+                        <a href="/forgot-password" className="text-muted">
+                            Quên mật khẩu?
+                        </a>
+                    </div>
+                    <button 
+                        type="button" 
+                        className="btn btn-primary w-100"
+                        onClick={handleLogin}
+                    >
+                        Đăng nhập
+                    </button>
+                </form>
+            </motion.div>
+        </div>
     );
 };
 

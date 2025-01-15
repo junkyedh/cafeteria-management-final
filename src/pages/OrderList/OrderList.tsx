@@ -13,20 +13,8 @@ export const OrderList = () =>{
   const [customerList, setCustomerList] = useState<any[]>([]);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
-  const [productList, setProductList] = useState<any[]>([]);
 
-  // const orderData = {
-  //   orderID: form.getFieldValue('orderID'),
-  //   customerName: customerList.find((customer) => customer.customerID === form.getFieldValue('customerID')).name,
-  //   customerPhone: customerList.find((customer) => customer.customerID === form.getFieldValue('customerID')).phonecustomer,
-  //   serviceType: form.getFieldValue('serviceType'),
-  //   totalPrice: form.getFieldValue('totalPrice'),
-  //   orderDate: ,
-  //   staffID: 0,
-  //   productIDs: [
-  //     selectedProduct?.id
-  //   ],
-  // }
+  
 
   const fetchOrderList = async () => {
     const res = await MainApiRequest.get('/order/list');
@@ -53,16 +41,6 @@ export const OrderList = () =>{
   const data = {
     
   }
-  const handleCancelOrder = (id: number) => {
-    const updatedOrderList = orderList.map((order) => {
-      if (order.orderID === id && order.status === 'Đang thực hiện') {
-        return { ...order, status: 'Đã huỷ' };
-      }
-      return order;
-    });
-    setOrderList(updatedOrderList);
-    message.success(`Hủy đơn hàng ${id} thành công.`);
-  };
 
 
   const handleSearchKeyword = () => {
@@ -71,9 +49,9 @@ export const OrderList = () =>{
     } else {
       const filteredList = originalOrderList.filter((order) => {
         return (
-          order.customerID.name.toLowerCase().includes(searchKeyword.toLowerCase()) ||
           order.id.toString().includes(searchKeyword) ||
-          order.customerID.phone.toLowerCase().includes(searchKeyword.toLowerCase())
+          order.phone.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+          order.staffName.toLowerCase().includes(searchKeyword.toLowerCase())
         );
       });
       setOrderList(filteredList);
@@ -85,12 +63,10 @@ export const OrderList = () =>{
     if (order) {
       const invoiceData= {
         id: order.id,
-        customerName: order.customerID.name,
-        phone: order.customerID.phone,
         serviceType: order.serviceType,
         totalPrice: order.totalPrice,
         orderDate: moment(order.orderDate).format('DD-MM-YYYY HH:mm:ss'),
-        staffName: order.staffID.name,
+        staffName: order.staffName,
         status: order.status
       }
       console.log('Invoice:', invoiceData);
@@ -104,55 +80,66 @@ export const OrderList = () =>{
     const worksheet = XLSX.utils.json_to_sheet(
       orderList.map((order) => ({
         id: order.id,
-        customerName: order.customerID.name,
-        phone: order.customerID.phone,
+        phone: order.phone,
         serviceType: order.serviceType,
         totalPrice: order.totalPrice,
         orderDate: moment(order.orderDate).format('DD-MM-YYYY HH:mm:ss'),
-        staffName: order.staffID.name,
+        staffName: order.staffName,
         status: order.status,
       }))
     );
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Danh Sách Đơn Hàng');
     XLSX.writeFile(workbook, 'DanhSachDonHang.xlsx');
-    message.success('Tải danh sách đơn hàng thành công.');
+    message.success('Xuất danh sách đơn hàng thành công.');
   };
 
-  const mappingColor = (status: string) => {
-    switch (status) {
-      case 'Đang chuẩn bị': return 'purple';
-      case 'Hoàn thành': return 'green';
-      case 'Đã huỷ': return 'red';
-      default: return 'black';
+  // const mappingColor = (status: string) => {
+  //   switch (status) {
+  //     case 'Đang chuẩn bị': return 'purple';
+  //     case 'Hoàn thành': return 'green';
+  //     case 'Đã huỷ': return 'red';
+  //     default: return 'black';
+  //   }
+  // }
+
+  const onConfirmOrder = async (record: any) => {
+    const id = record.id;
+    const res = await MainApiRequest.put(`/order/complete/${id}`, { status: 'Đang chuẩn bị' });
+    if (res.status === 200) {
+      message.success(`Xác nhận đơn hàng ${id} thành công.`);
+      fetchOrderList();
+    } else {
+      message.error(`Xác nhận đơn hàng ${id} thất bại.`);
+    }
+  };
+  
+  const onCancelOrder = async (record: any) => {
+    const id = record.id;
+    const res = await MainApiRequest.put(`/order/cancel/${id}`, { status: 'Đã huỷ' });
+    if (res.status === 200) {
+      message.success(`Hủy đơn hàng ${id} thành công.`);
+      fetchOrderList();
+    } else {
+      message.error(`Hủy đơn hàng ${id} thất bại.`);
     }
   }
 
-  const handleCompleteOrder = (id: number) => {
-    const updatedOrderList = orderList.map((order) => {
-      if (order.id === id && order.status === 'Đang chuẩn bị') {
-        return { ...order, status: 'Hoàn tất' };
-      }
-      return order;
-    });
-    setOrderList(updatedOrderList);
-    message.success(`Hoàn tất đơn hàng ${id} thành công.`);
-  };
 
   return (
     <div className="container-fluid m-2">
-      <h3 className='h3'>DANH SÁCH ĐƠN HÀNG</h3>
+      <h2 className='h2 header-custom'>DANH SÁCH ĐƠN HÀNG</h2>
       
       {/* Search and Export Buttons */}
       <div className="d-flex justify-content-between mb-3">
         <Button type="primary" onClick={handleExportOrderList}>
-          Tải danh sách đơn hàng
+          Xuất danh sách
         </Button>
         <Form
           layout='inline'
           className='d-flex'
         >
-          <Form.Item label='Tìm kiếm (Tên khách hàng, Số điện thoại, Mã đơn)' className='d-flex flex-1'>
+          <Form.Item label='Tìm kiếm (Số điện thoại, Mã đơn)' className='d-flex flex-1 mt-2 #2F4156'>
         <Input placeholder='Search Keyword' value={searchKeyword} onChange={(e) => setSearchKeyword(e.target.value)} />
           </Form.Item>
           <Form.Item>
@@ -168,10 +155,6 @@ export const OrderList = () =>{
           {
             sorter: (a,b) => a.id - b.id,
             title: 'Mã đơn', dataIndex: 'id', key: 'id',
-          },
-          {
-            sorter: (a,b) => a.id.customerID.localeCompare(b.id.customerID),
-            title: 'Mã khách hàng', dataIndex: 'customerID', key: 'customerID', 
           },
           {
             sorter: (a,b) => a.phone.localeCompare(b.phone),
@@ -191,13 +174,25 @@ export const OrderList = () =>{
             render: (orderDate: string) => moment(orderDate).format('DD-MM-YYYY HH:mm:ss')
           },
           {
-            sorter: (a,b) => a.staffName.localeCompare(b.staffNname),
+            sorter: (a,b) => a.staffName.localeCompare(b.staffName),
             title: 'Nhân viên phục vụ', dataIndex: 'staffName', key: 'staffName', 
           },
           {
             sorter: (a,b) => a.status.localeCompare(b.status),
             title: 'Trạng thái', dataIndex: 'status', key: 'status', 
-            render: (status: string) => <Tag color={mappingColor(status)}>{status}</Tag>
+            render: (status: string) => {
+              let color = '';
+              if (status === "Đang chuẩn bị") {
+                color = 'purple';
+              } else if (status === "Hoàn thành") {
+                color = 'green';
+              } else if (status === "Đã hủy") {
+                color = 'red';
+              } else {
+                color = 'default'; // Màu mặc định nếu trạng thái không xác định
+              }
+              return <Tag color={color}>{status}</Tag>;
+            },
           },
           {
             title: 'Hành động',
@@ -209,14 +204,14 @@ export const OrderList = () =>{
                   <Space size="middle">                    
                     <Button
                       type='primary'
-                      onClick={() => handleCompleteOrder(record.id)}
+                      onClick={() => onConfirmOrder(record)}
                       style={{ marginRight: 8 }}
                     >
-                      Hoàn tất
+                      Hoàn thành
                     </Button>
                     <Popconfirm
                       title="Bạn có chắc chắn muốn huỷ đơn này không?"
-                      onConfirm={() => handleCancelOrder(record.id)}
+                      onConfirm={() => onCancelOrder(record)}
                       okText="Có"
                       cancelText="Không"
                     >

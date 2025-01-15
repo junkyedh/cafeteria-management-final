@@ -1,37 +1,40 @@
 import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Form, Button, Card } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
-import { MainApiRequest } from "@/services/MainApiRequest"; // Thay thế với API thực tế của bạn
+import { Container, Row, Col, Form, Button, Card, Accordion } from "react-bootstrap";
+import { Spin, message } from "antd";
+import { MainApiRequest } from "@/services/MainApiRequest";
 import "./ProfileUser.scss";
-import { Tag, message } from "antd";
+import imgProfile from '../../assets/profile.jpg';
 
 const ProfileUser = () => {
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const [id, setId] = useState<number | null>(null);
-  const [email, setEmail] = useState("");
   const [name, setName] = useState("");
+  const [gender, setGender] = useState("");
+  const [birth, setBirth] = useState("");
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [image, setImage] = useState<string | File>("");
-  const [user, setUser] = useState({ imageUrl: "" });
-  const [peachCoin, setPeachCoin] = useState(0);
-  const [peachPoint, setPeachPoint] = useState(0);
+  const [workHours, setWorkHours] = useState<number | null>(null);
+  const [minSalary, setMinSalary] = useState<number | null>(null);
+  const [typeStaff, setTypeStaff] = useState("");
+  const [startDate, setStartDate] = useState("");
 
-  // Lấy thông tin người dùng từ API khi component mount
   const fetchUserProfile = async () => {
     try {
       const response = await MainApiRequest.get("/auth/callback");
-      setEmail(response.data.data.email);
-      setName(response.data.data.name);
-      setAddress(response.data.data.address);
-      setPhone(response.data.data.phone);
-      setImage(response.data.data.image);
-      setId(response.data.data.id);
-      setPeachCoin(response.data.data.peachCoin);
-      setPeachPoint(response.data.data.peachPoint);
+      const data = response.data.data;
+      setId(data.id);
+      setName(data.name);
+      setGender(data.gender);
+      setBirth(data.birth);
+      setAddress(data.address);
+      setPhone(data.phone);
+      setWorkHours(data.workHours);
+      setMinSalary(data.minsalary);
+      setTypeStaff(data.typeStaff);
+      setStartDate(data.startDate);
     } catch (error) {
-      console.error("Error fetching user profile", error);
+      console.error("Error fetching user profile:", error);
+      message.error("Không thể tải thông tin người dùng.");
     }
   };
 
@@ -39,194 +42,115 @@ const ProfileUser = () => {
     fetchUserProfile();
   }, []);
 
-  // Cập nhật thông tin người dùng
   const handleUpdateProfile = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     const updatedData = {
-      email,
       name,
+      gender,
+      birth,
       address,
       phone,
-      // image
+      workHours,
+      minsalary: minSalary,
+      typeStaff,
+      startDate,
     };
+
     try {
-      await MainApiRequest.put(`/user/${id}`, updatedData);
-      // alert("Profile updated successfully!");
-      message.success("Profile updated successfully!");
+      await MainApiRequest.put(`/staff/${id}`, updatedData);
+      message.success("Cập nhật thông tin thành công!");
     } catch (error) {
-      console.error("Error updating profile", error);
-      // alert("Failed to update profile. Please try again.");
-      message.error("Failed to update profile. Please try again.");
+      console.error("Error updating profile:", error);
+      message.error("Cập nhật thất bại, vui lòng thử lại.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files[0]) {
-      const file = files[0];
-      setUser({ ...user, imageUrl: URL.createObjectURL(file) }); // Thay thế ảnh hiện tại bằng URL tạm
-      setImage(file); // Lưu ảnh để upload sau
-    }
-  };
-
-  const handleImageUpload = async () => {
-    if (image) {
-      const formData = new FormData();
-      formData.append("file", image); // Gửi ảnh thực lên server
-      try {
-        const response = await MainApiRequest.post("/upload-avatar", formData);
-        if (response.status === 200) {
-          // alert("Image uploaded successfully!");
-          message.success("Image uploaded successfully!");
-          setUser({ ...user, imageUrl: response.data.imageUrl }); // Cập nhật ảnh từ server
-        }
-      } catch (error) {
-        console.error("Error uploading image:", error);
-        // alert("Failed to upload image. Please try again.");
-        message.error("Failed to upload image. Please try again.");
-      }
-    }
-  };
-
-  const mapRank = (point: number) => {
-    if (point < 1000) return "Bronze";
-    if (point < 5000) return "Silver";
-    if (point < 10000) return "Gold";
-    return "Platinum";
-  };
-
-  const mapColor = (point: number) => {
-    if (point < 1000) return "orange";
-    if (point < 5000) return "gray";
-    if (point < 10000) return "gold";
-    return "green";
-  };
-
-  const mapIcon = (point: number) => {
-    if (point < 1000) return "🥉";
-    if (point < 5000) return "🥈";
-    if (point < 10000) return "🥇";
-    return "🏆";
-  };
-
   return (
-    <>
-      <section className="profile-section py-5 d-flex justify-content-center align-items-center">
-        <div className="shadow-sm p-4 w-50 ">
-            <h3 className="h4 font-bold m-0">My Profile</h3>
-          <Card.Body>
-            <div className="profile-img-container">
-              <img
-                // src={user.imageUrl || userImg}
-                src="https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg"
-                alt="Profile"
-                className="profile-img"
-              />
-              <div className="image-upload">
-                {/* <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  id="image-upload-input"
-                  className="d-none"
-                /> */}
-                <span>
-                  <strong>Current Rank: </strong>
-                  {mapIcon(peachPoint)}
-                  <Tag color={mapColor(peachPoint)} className="upload-tag">
-                    {mapRank(peachPoint)}
-                  </Tag>
-                </span>
-                {/* <Button
-                  variant="primary"
-                  onClick={() => document.getElementById("image-upload-input")?.click()}
-                  className="upload-btn"
-                >
-                  Upload Image
-                </Button> */}
-
-              </div>
-            </div>
-            <hr />
-            <Form onSubmit={handleUpdateProfile}>
-              <Form.Group controlId="email" className="mb-4">
-                <Form.Label>Email</Form.Label>
-                <Form.Control
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled
-                />
-              </Form.Group>
-
-              <Form.Group controlId="name" className="mb-4">
-                <Form.Label>Name</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Enter your name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </Form.Group>
-
-              <Form.Group controlId="address" className="mb-4">
-                <Form.Label>Address</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Enter your address"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                />
-              </Form.Group>
-
-              <Form.Group controlId="phone" className="mb-4">
-                <Form.Label>Phone</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Enter your phone number"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                />
-              </Form.Group>
-
-              <Form.Group controlId="peachCoin" className="mb-4">
-                <Form.Label>Peach Coin</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Enter your phone number"
-                  value={peachCoin}
-                  disabled
-                  readOnly
-                />
-              </Form.Group>
-              {/* 
-              <Form.Group controlId="peachPoint" className="mb-4">
-                <Form.Label>Peach Point</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Enter your phone number"
-                  value={peachPoint}
-                  disabled
-                  readOnly
-                />
-              </Form.Group> */}
-
-              <Button
-                className="primaryBtn"
-                type="submit"
-                disabled={loading}
-              >
-                {loading ? "Updating..." : "Update Profile"}
-              </Button>
-            </Form>
-          </Card.Body>
-        </div>
-      </section>
-    </>
+    <div className="container-fluid m-2">
+      <h2 className='h2 header-custom'>THÔNG TIN CỦA TÔI</h2>
+      <Container fluid className="profile-container">
+        <Row className="profile-content">
+          <Col md={4} className="profile-sidebar text-center">
+            <img
+              src= {imgProfile}
+              alt="Avatar"
+              className="profile-avatar"
+            />
+            <h4>{name || "Họ và tên"}</h4>
+            <p>{typeStaff || "Loại nhân viên"}</p>
+          </Col>
+          <Col md={8}>
+            <Card className="profile-details">
+              <Card.Body>
+                <Form onSubmit={handleUpdateProfile}>
+                <Row  style={{display:"flex", justifyContent:"space-around" }}>
+                  <Col md={6}>
+                    <Form.Group controlId="name" className="mb-3">
+                      <Form.Label>Tên</Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="Nhập tên của bạn"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                      />
+                    </Form.Group>
+                    <Form.Group controlId="birth" className="mb-3">
+                      <Form.Label>Ngày sinh</Form.Label>
+                      <Form.Control
+                        type="date"
+                        value={birth}
+                        onChange={(e) => setBirth(e.target.value)}
+                      />
+                    </Form.Group>
+                    <Form.Group controlId="gender" className="mb-3">
+                      <Form.Label>Giới tính</Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="Nam/Nữ"
+                        value={gender}
+                        onChange={(e) => setGender(e.target.value)}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={6}>
+                    <Form.Group controlId="address" className="mb-3">
+                      <Form.Label>Địa chỉ</Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="Nhập địa chỉ"
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                      />
+                    </Form.Group>
+                    <Form.Group controlId="phone" className="mb-3">
+                      <Form.Label>Số điện thoại</Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="Nhập số điện thoại"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                      />
+                    </Form.Group>
+                  </Col>
+                <Button 
+                    type="submit" 
+                    variant="primary" 
+                    className="mt-3"
+                    style={{ width: "50%", display:"flex", justifyContent:"space-around" }}
+                  >
+                    {loading ? "Đang cập nhật..." : "Cập nhật thông tin"}
+                </Button>
+                </Row>
+                </Form>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
+    </div>
   );
 };
 
