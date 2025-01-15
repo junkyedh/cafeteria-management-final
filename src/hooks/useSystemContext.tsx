@@ -49,6 +49,10 @@ export const AppSystemProvider = ({ children }: any) => {
         }
     }, []);
 
+    useEffect(() => {
+        setIsLoggedIn(!!token);
+    }, [token]);
+
     return (
         <AppSystemContext.Provider value={appSystemContextValue}>
             {children}

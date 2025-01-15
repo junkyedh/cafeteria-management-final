@@ -3,6 +3,7 @@ import { Container, Row, Col, Form, Button, Card, Accordion } from "react-bootst
 import { Spin, message } from "antd";
 import { MainApiRequest } from "@/services/MainApiRequest";
 import "./ProfileUser.scss";
+import imgProfile from '../../assets/profile.jpg';
 
 const ProfileUser = () => {
   const [loading, setLoading] = useState(false);
@@ -74,7 +75,7 @@ const ProfileUser = () => {
         <Row className="profile-content">
           <Col md={4} className="profile-sidebar text-center">
             <img
-              src="https://via.placeholder.com/150"
+              src= {imgProfile}
               alt="Avatar"
               className="profile-avatar"
             />

@@ -7,10 +7,8 @@ import { MainApiRequest } from '@/services/MainApiRequest';
 const Login = () => {
     const navigate = useNavigate();
     const context = useSystemContext();
-    const {
-        isLoggedIn,
-        token
-    } = context;
+    const { isLoggedIn, setToken } = context;
+
 
     const [phone, setPhone] = React.useState('');
     const [password, setPassword] = React.useState('');
@@ -21,25 +19,27 @@ const Login = () => {
     }
 
     const handleLogin = async () => {
-        const res = await MainApiRequest.post('/auth/signin', {
-            phone,
-            password
-        });
+        try {
+            const res = await MainApiRequest.post('/auth/signin', { phone, password });
 
-        if (res.status === 200) {
-            const data = res.data;
-            context.setToken(data.token);
+            if (res.status === 200) {
+                const data = res.data;
+                setToken(data.token); // Lưu token vào context
 
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('role', data.role);
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('role', data.user.role);
 
-            navigate('/');
+                // Điều hướng đến trang dashboard sau khi đăng nhập thành công
+                navigate('/order/choose-table');
+            }
+        } catch (error) {
+            console.error('Đăng nhập thất bại:', error);
         }
     }
 
     useEffect(() => {
-        if (!isLoggedIn && token) {
-            navigate('/');
+        if (isLoggedIn) {
+            navigate('/order/choose-table');
         }
     }, [isLoggedIn]);
 
