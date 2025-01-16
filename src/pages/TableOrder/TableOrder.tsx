@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button, Card, Modal, Space, message, Select, Form, Input } from "antd";
 import { useNavigate } from "react-router-dom";
+import { AxiosError } from "axios";
 import "./TableOrder.scss";
 import { MainApiRequest } from "@/services/MainApiRequest";
 
@@ -95,6 +96,33 @@ const TableOrder = () => {
 
     const handleChooseProduct = async (table: any, serviceType: "Dine In" | "Take Away") => {
         try {
+            if (serviceType === "Dine In") {
+                if (table.phoneOrder) {
+                    try {
+                        // Kiểm tra khách hàng đã tồn tại hay chưa
+                        const response = await MainApiRequest.get(`/customer/${table.phoneOrder}`);
+                        console.log("Existing customer found:", response.data);
+                    } catch (error) {
+                        const axiosError = error as AxiosError;
+                        if (axiosError.response?.status === 404) {
+                            // Nếu khách hàng không tồn tại, thêm mới
+                            const customerData = {
+                                name: table.name || "Khách vãng lai", // Sử dụng tên từ table hoặc mặc định
+                                phone: table.phoneOrder,
+                                gender: "Khác", // Mặc định giới tính
+                                registrationDate: new Date().toISOString(), // Ngày đăng ký hiện tại
+                            };
+
+                            console.log("Customer data (new):", customerData);
+
+                            await MainApiRequest.post("/customer", customerData);
+                            console.log("New customer created successfully!");
+                        } else {
+                            throw error; // Ném lỗi khác nếu không phải 404
+                        }
+                    }
+                }
+            }
             // Chuẩn bị dữ liệu đơn hàng thô
             const orderData = {
                 phone: table?.phoneOrder || null,
@@ -105,6 +133,8 @@ const TableOrder = () => {
                 tableID: serviceType === "Dine In" ? table?.id : null,
                 status: "Đang chuẩn bị", // Trạng thái mặc định
             };
+
+            console.log("data: ", orderData);
 
             // Gửi yêu cầu tạo đơn hàng
             await MainApiRequest.post("/order", orderData);
@@ -181,15 +211,12 @@ const TableOrder = () => {
 
     return (
         <div className="table-booking-container">
-            <h2 className="header-custom">
-                Danh Sách Bàn
-            </h2>
+            <h2 className='h2 header-custom'>DANH SÁCH BÀN</h2>
             <div className="action-buttons">
                 <Button onClick={() => handleChooseProduct(null, "Take Away")}>
                     Mang đi
                 </Button>
-                <Button>Tại chỗ</Button>
-                <Button type="dashed" onClick={() => handleOpenModal()}>
+                <Button onClick={() => handleOpenModal()}>
                     Thêm bàn
                 </Button>
                 <Modal
@@ -233,7 +260,7 @@ const TableOrder = () => {
 
                 {/* Bộ lọc theo số chỗ ngồi */}
                 <Select
-                    style={{ width: 120 }}
+                    style={{ width: 120, height: 40 }}
                     value={selectedSeats}
                     onChange={handleFilterChange}
                     placeholder="Chọn số ghế"
@@ -335,6 +362,13 @@ const TableOrder = () => {
                         name="phoneOrder"
                     >
                         <Input placeholder="Nhập số điện thoại" />
+                    </Form.Item>
+
+                    <Form.Item
+                        label="Tên khách hàng"
+                        name="name"
+                    >
+                        <Input placeholder="Nhập tên khách" />
                     </Form.Item>
 
                     <Form.Item
