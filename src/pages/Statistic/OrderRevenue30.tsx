@@ -24,24 +24,23 @@ ChartJS.register(
     Legend
 );
 
-const DrinkOrderRevenueChart = ({ data }: { data: any }) => {
+const OrderRevenue30 = ({ data }: { data: any }) => {
     const [chartData, setChartData] = useState<any>(null);
 
-    // Dữ liệu giả lập cho số lượng đặt nước và doanh thu
-    const sampleData = data?.last14DaysOrders || [];
-    const sampleRevenueData = data?.last14DaysRevenue || [];
+    const sampleData = data?.last30DaysOrder || [];
+
 
     useEffect(() => {
         const labels = sampleData.map((item: any) => moment(item.date).format('DD/MM/YYYY'));
         const orderValues = sampleData.map((item: any) => item.amount);
-        const revenueValues = sampleRevenueData.map((item: any) => item.amount);
+        const revenueValues = (data?.last30DaysOrderValue || []).map((item: any) => item.amount);
 
         setChartData({
             labels: labels,
             datasets: [
                 {
                     type: 'bar',
-                    label: 'Số lượng đặt nước',
+                    label: 'Số lượng sản phẩm',
                     data: orderValues,
                     backgroundColor: 'rgba(75, 192, 192, 0.6)',
                     borderColor: 'rgba(75, 192, 192, 1)',
@@ -49,7 +48,7 @@ const DrinkOrderRevenueChart = ({ data }: { data: any }) => {
                     yAxisID: 'y-axis-1',
                 },
                 {
-                    type: 'line',
+                    type: 'bar',
                     label: 'Doanh thu hàng ngày (VND)',
                     data: revenueValues,
                     backgroundColor: 'rgba(153, 102, 255, 0.6)',
@@ -75,7 +74,7 @@ const DrinkOrderRevenueChart = ({ data }: { data: any }) => {
                             },
                             title: {
                                 display: true,
-                                text: 'Số lượng đặt nước và doanh thu trong 14 ngày qua'
+                                text: 'Số lượng sản phẩm được đặt và doanh thu trong 30 ngày qua'
                             }
                         },
                         scales: {
@@ -90,7 +89,7 @@ const DrinkOrderRevenueChart = ({ data }: { data: any }) => {
                                 position: 'left',
                                 title: {
                                     display: true,
-                                    text: 'Số lượng đặt nước'
+                                    text: 'Số lượng sản phẩm được đặt'
                                 },
                                 beginAtZero: true,
                             },
@@ -116,4 +115,4 @@ const DrinkOrderRevenueChart = ({ data }: { data: any }) => {
     );
 }
 
-export default DrinkOrderRevenueChart;
+export default OrderRevenue30;

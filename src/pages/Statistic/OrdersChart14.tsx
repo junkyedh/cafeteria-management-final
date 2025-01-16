@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Line } from 'react-chartjs-2';
+import { Bar } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
     CategoryScale,
     LinearScale,
-    LineElement,
-    PointElement,
+    BarElement,
     Title,
     Tooltip,
     Legend
@@ -15,42 +14,40 @@ import moment from 'moment';
 ChartJS.register(
     CategoryScale,
     LinearScale,
-    LineElement,
-    PointElement,
+    BarElement,
     Title,
     Tooltip,
     Legend
 );
 
-const RevenueChart = ({ data }: { data: any }) => {
+const OrdersChart14 = ({ data }: { data: any }) => {
     const [chartData, setChartData] = useState<any>(null);
-
-    // Dữ liệu doanh thu mẫu
-    const sampleRevenueData = data?.last30DaysBookingValue || [];
+    const sampleData = data?.last14DaysOrder || [];
 
     useEffect(() => {
-        const labels = sampleRevenueData.map((item: any) => moment(item.date).format('DD/MM/YYYY'));
-        const values = sampleRevenueData.map((item: any) => item.amount);
+        if (sampleData.length > 0) {
+            const labels = sampleData.map((item: any) => moment(item.date).format('DD/MM/YYYY'));
+            const values = sampleData.map((item: any) => item.amount);
 
-        setChartData({
-            labels: labels,
-            datasets: [
-                {
-                    label: 'Doanh thu hàng ngày',
-                    data: values,
-                    backgroundColor: 'rgba(153, 102, 255, 0.6)',
-                    borderColor: 'rgba(153, 102, 255, 1)',
-                    fill: false,
-                    tension: 0.1,
-                }
-            ]
-        });
-    }, [data]);
+            setChartData({
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Số lượng',
+                        data: values,
+                        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            });
+        }
+    }, [sampleData]);
 
     return (
         <div className="chart">
-            {chartData ? (
-                <Line
+            {chartData && chartData.labels.length > 0 ? (
+                <Bar
                     data={chartData}
                     options={{
                         responsive: true,
@@ -60,7 +57,7 @@ const RevenueChart = ({ data }: { data: any }) => {
                             },
                             title: {
                                 display: true,
-                                text: 'Doanh thu hàng ngày trong 30 ngày qua'
+                                text: 'Số lượng đơn trong 14 ngày qua'
                             }
                         },
                         scales: {
@@ -73,7 +70,7 @@ const RevenueChart = ({ data }: { data: any }) => {
                             y: {
                                 title: {
                                     display: true,
-                                    text: 'Doanh thu (VND)'
+                                    text: 'Số lượng sản phẩm được đặt'
                                 },
                                 beginAtZero: true
                             }
@@ -81,10 +78,10 @@ const RevenueChart = ({ data }: { data: any }) => {
                     }}
                 />
             ) : (
-                <p>Đang tải dữ liệu...</p>
+                <p>Không có dữ liệu để hiển thị</p>
             )}
         </div>
     );
-}
+};
 
-export default RevenueChart;
+export default OrdersChart14;

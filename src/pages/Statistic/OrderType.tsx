@@ -13,42 +13,44 @@ ChartJS.register(
     Legend
 );
 
-const CustomerRankChart = ({ data }: { data: any }) => {
+const OrderType = ({ data }: { data: any }) => {
     const [chartData, setChartData] = useState<any>(null);
 
-    
     useEffect(() => {
-        const sampleData = data?.rankMap || {};
-        const arr = Object.entries(sampleData).map(([key, value]) => ({ rank: key, customers: value }));
-        
-        if (arr.length > 0) {
-            const labels = arr.map(item => item.rank);
-            const values = arr.map(item => item.customers);
+        if (data?.serviceType) {
+            const { takeAway, dineIn } = data.serviceType;
+            const total = takeAway + dineIn;
+
+            const takeAwayPercentage = ((takeAway / total) * 100).toFixed(2);
+            const dineInPercentage = ((dineIn / total) * 100).toFixed(2);
+
+            const sampleData = [
+                { type: 'Take away', percentage: parseFloat(takeAwayPercentage) },
+                { type: 'Dine in', percentage: parseFloat(dineInPercentage) },
+            ];
+
+
+            const labels = sampleData.map(item => item.type);
+            const values = sampleData.map(item => item.percentage);
 
             setChartData({
                 labels: labels,
                 datasets: [
                     {
-                        label: 'Số lượng',
+                        label: 'Phần trăm',
                         data: values,
                         backgroundColor: [
-                            'rgba(255, 99, 132, 0.6)', // Vàng
-                            'rgba(54, 162, 235, 0.6)', // Bạc
-                            'rgba(255, 206, 86, 0.6)', // Đồng
-                            'rgba(75, 192, 192, 0.6)'  // Thường
+                            'rgba(54, 162, 235, 0.6)', // Take away
+                            'rgba(255, 206, 86, 0.6)', // Dine in
                         ],
                         borderColor: [
-                            'rgba(255, 99, 132, 1)',
-                            'rgba(54, 162, 235, 1)',
-                            'rgba(255, 206, 86, 1)',
-                            'rgba(75, 192, 192, 1)'
+                            'rgba(54, 162, 235, 1)', // Take away
+                            'rgba(255, 206, 86, 1)', // Dine in
                         ],
                         borderWidth: 1
                     }
                 ]
             });
-        } else {
-            setChartData(null);
         }
     }, [data]);
 
@@ -65,16 +67,16 @@ const CustomerRankChart = ({ data }: { data: any }) => {
                             },
                             title: {
                                 display: true,
-                                text: 'Phân bố khách hàng theo hạng'
+                                text: 'Thống kê loại phục vụ'
                             }
                         }
                     }}
                 />
             ) : (
-                <p>Đang tải dữ liệu...</p>
+                <p>Loading...</p>
             )}
         </div>
     );
 }
 
-export default CustomerRankChart;
+export default OrderType;

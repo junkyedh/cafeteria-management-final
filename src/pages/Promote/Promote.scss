@@ -33,7 +33,7 @@
 
         &:hover {
           background-color: get-color($primary, "200") !important;
-          color: get-color($secondary, "200") !important;
+          color: get-color($secondary, "100") !important;
         }
       } 
   
@@ -45,7 +45,7 @@
         }
         &.ant-btn-danger {
           background-color: get-color($accent, "200") !important;
-          color: get-color($secondary, "200") !important;
+          color: get-color($secondary, "100") !important;
         }
       }
     }
@@ -163,7 +163,7 @@
         transition: border-color 0.3s ease;
   
         &:focus {
-          border-color: #40a9ff;
+          border-color: get-color($primary, "100") !important;
           box-shadow: 0 0 8px rgba(64, 169, 255, 0.2);
         }
 

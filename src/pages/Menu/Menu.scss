@@ -289,3 +289,24 @@
     background-color: #C8D9E6; // Màu nền của nút khi được chọn
     color: #2f4156;
 }
+@media screen and (max-width: 768px) {
+    .menu-container {
+        flex-direction: column;
+    }
+
+    .menu-left,
+    .menu-right {
+        border: none;
+        max-width: 100%;
+    }
+
+    .menu-right {
+        border-top: 1px solid #ddd;
+    }
+
+    .product-card {
+        width: 100%;
+        max-width: 100%;
+    }
+    
+}
