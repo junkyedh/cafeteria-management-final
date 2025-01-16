@@ -127,9 +127,9 @@
     }
 
     &:hover {
-      background-color: get-color($accent, "200");
+      background: linear-gradient(0deg, #2F4156, #557C8D);
       color: get-color($accent, "100");
-      border: 2px solid get-color($accent, "200"); ;
+      //border: 2px solid get-color($accent, "200"); ;
 
       i {
         color: get-color($accent, "100"); 

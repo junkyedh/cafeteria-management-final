@@ -82,6 +82,18 @@
   
       .ant-table-tbody > tr > td {
         text-align: center;
+
+        .ant-table-tbody > tr:nth-child(odd) {
+          background-color: #f9f9f9; // Màu nền cho các hàng lẻ
+        }
+        
+        .ant-table-tbody > tr:nth-child(even) {
+          background-color: #ffffff; // Màu nền cho các hàng chẵn
+        }
+        
+        .ant-table-tbody > tr:hover {
+          background-color: #e6f7ff; // Màu nền khi hover
+        }
   
         .ant-space-item {
           button {

@@ -157,28 +157,28 @@ export const OrderList = () =>{
             title: 'Mã đơn', dataIndex: 'id', key: 'id',
           },
           {
-            sorter: (a,b) => a.phone.localeCompare(b.phone),
+            sorter: (a, b) => (a.phone || '').localeCompare(b.phone || ''),
             title: 'Số điện thoại', dataIndex: 'phone', key: 'phone',
           },
           {
-            sorter: (a,b) => a.serviceType.localeCompare(b.serviceType),
+            sorter: (a, b) => (a.serviceType || '').localeCompare(b.serviceType || ''),
             title: 'Loại phục vụ', dataIndex: 'serviceType', key: 'serviceType'
           },
           {
-            sorter: (a,b) => a.totalPrice - b.totalPrice,
+            sorter: (a, b) => (a.totalPrice || 0) - (b.totalPrice || 0),
             title: 'Tổng tiền', dataIndex: 'totalPrice', key: 'totalPrice'
           },
           {
-            sorter: (a,b) => a.orderdate.localeCompare(b.orderdate),
+            sorter: (a, b) => new Date(a.orderdate || 0).getTime() - new Date(b.orderdate || 0).getTime(),
             title: 'Ngày đặt', dataIndex: 'orderdate', key: 'orderdate', 
             render: (orderDate: string) => moment(orderDate).format('DD-MM-YYYY HH:mm:ss')
           },
           {
-            sorter: (a,b) => a.staffName.localeCompare(b.staffName),
+            sorter: (a, b) => (a.staffName || '').localeCompare(b.staffName || ''),
             title: 'Nhân viên phục vụ', dataIndex: 'staffName', key: 'staffName', 
           },
           {
-            sorter: (a,b) => a.status.localeCompare(b.status),
+            sorter: (a, b) => (a.status || '').localeCompare(b.status || ''),
             title: 'Trạng thái', dataIndex: 'status', key: 'status', 
             render: (status: string) => {
               let color = '';
