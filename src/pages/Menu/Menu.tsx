@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import imgDefault from '@/assets/coffee.png';
-import { Button, Input, Modal, Select, Card, message, Pagination, AutoComplete, Form, DatePicker } from 'antd';
+import { Button, Input, Modal, Select, Card, message, Pagination, AutoComplete, Form, DatePicker, Flex } from 'antd';
 import './Menu.scss';
 import { MainApiRequest } from '@/services/MainApiRequest';
 import { useNavigate } from "react-router-dom";
@@ -15,7 +15,7 @@ interface Product {
     id: string;
     name: string;
     category: string;
-    imageurl: string;
+    image: string;
     available: boolean;
     price: number;
     upsize: number;
@@ -24,6 +24,21 @@ interface Product {
     sizel: boolean; // true nếu có size L
     hot: boolean;
     cold: boolean;
+}
+
+interface Coupon {
+    id: number;
+    code: string;
+    status: string;
+    promote: {
+        id: number;
+        name: string;
+        description: string;
+        discount: number;
+        promoteType: string;
+        startAt: string;
+        endAt: string;
+    };
 }
 
 const Menu = () => {
@@ -43,8 +58,18 @@ const Menu = () => {
     const [form] = Form.useForm();
     const [suggestions, setSuggestions] = useState<{ phone: string, name: string }[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
+    const [couponCode, setCouponCode] = useState('');
+    const [discountAmount, setDiscountAmount] = useState(0);
+    const [totalPrice, setTotalPrice] = useState(
+        Object.values(order).reduce((total, item) => total + item.price * item.quantity, 0)
+    );
     const pageSize = 6;
     const navigate = useNavigate();
+
+    const fetchInvoiceTemplate = async () => {
+        const response = await fetch("/invoiceTemplate.html");
+        return response.text();
+    };
 
     const fetchMenuList = async () => {
         try {
@@ -78,6 +103,15 @@ const Menu = () => {
 
         fetchOrderInfo();
     }, []);
+
+    useEffect(() => {
+        // Tính lại tổng tiền khi order thay đổi
+        const calculateTotalPrice = () => {
+            const total = Object.values(order).reduce((sum, item) => sum + item.price * item.quantity, 0);
+            setTotalPrice(total);
+        };
+        calculateTotalPrice();
+    }, [order]);
 
     const filteredProducts = menuList.filter((product) =>
         selectedCategory === 'All' || product.category === selectedCategory
@@ -189,12 +223,19 @@ const Menu = () => {
     };
 
     const handleRemoveItem = (id: string, size: string, mood: string) => {
-        const actualMood = mood || ''; // Nếu mood không tồn tại, sử dụng chuỗi rỗng
-        const key = `${id}-${size}-${actualMood}`; // Tạo key giống với key khi thêm vào order
+        const actualMood = mood === '' ? 'none' : mood; // Đảm bảo 'mood' rỗng được thay bằng 'none'
+        const key = `${id}-${size}-${actualMood}`; // Tạo key để xóa
+
         setOrder((prevOrder) => {
-            const newOrder = { ...prevOrder };
-            delete newOrder[key];
-            return newOrder;
+            // Kiểm tra key đã tồn tại trong order chưa
+            if (prevOrder[key]) {
+                const newOrder = { ...prevOrder }; // Tạo bản sao của order hiện tại
+                delete newOrder[key]; // Xóa item theo key
+                return newOrder; // Trả về order đã cập nhật
+            }
+
+            // Nếu key không tồn tại, trả về order không thay đổi
+            return prevOrder;
         });
     };
 
@@ -233,22 +274,69 @@ const Menu = () => {
         });
     };
 
+    const handleApplyCoupon = async () => {
+        try {
+            let couponDiscount = 0;
+            let membershipDiscount = 0;
+
+            // Lấy thông tin coupon
+            if (couponCode) {
+                const response = await MainApiRequest.get('/promote/coupon/list');
+                const coupon = response.data.find((c: Coupon) => c.code === couponCode && c.status === 'Có hiệu lực');
+
+                if (coupon) {
+                    const discount = coupon.promote.discount;
+                    if (coupon.promote.promoteType === 'Phần trăm') {
+                        couponDiscount = (totalPrice * discount) / 100;
+                    } else if (coupon.promote.promoteType === 'Cố định') {
+                        couponDiscount = discount;
+                    }
+                } else {
+                    message.error('Mã giảm giá không hợp lệ hoặc đã hết hạn!');
+                    return;
+                }
+            }
+
+            // Lấy thông tin rank khách hàng
+            if (phone) {
+                const customerResponse = await MainApiRequest.get(`/customer/${phone}`);
+                const customer = customerResponse.data;
+
+                if (customer?.rank) {
+                    const membershipResponse = await MainApiRequest.get(`/membership/${customer.rank}`);
+                    const membership = membershipResponse.data;
+
+                    if (membership?.discount) {
+                        membershipDiscount = membership.discount;
+                    }
+                }
+            }
+
+            // Tính tổng chiết khấu
+            setDiscountAmount(couponDiscount + membershipDiscount);
+            message.success('Áp dụng chiết khấu thành công!');
+        } catch (error) {
+            console.error('Lỗi khi áp dụng chiết khấu:', error);
+            message.error('Có lỗi xảy ra khi áp dụng chiết khấu!');
+        }
+    };
+
     const updateCustomerTotal = async (phone: string, currentBillTotal: number) => {
         try {
             // Lấy tổng chi tiêu hiện tại
             const response = await MainApiRequest.get(`/customer/${phone}`);
             const customer = response.data;
-    
+
             if (!customer) {
                 console.error("Customer not found");
                 return;
             }
-    
+
             const updatedTotal = (customer.total || 0) + currentBillTotal;
-    
+
             // Cập nhật tổng chi tiêu
             await MainApiRequest.put(`/customer/total/${phone}`, { total: updatedTotal });
-    
+
             console.log("Customer total updated successfully!");
         } catch (error) {
             console.error("Failed to update customer total:", error);
@@ -257,12 +345,26 @@ const Menu = () => {
 
     const handlePayment = async () => {
         try {
-            // Thông tin cần thiết để cập nhật order_tb
-            const totalQuantity = Object.values(order).reduce((total, item) => total + item.quantity, 0);
-            const totalPrice = Object.values(order).reduce((total, item) => total + item.price * item.quantity, 0);
-            const status = "Đang chuẩn bị"; // Trạng thái đơn hàng sau khi thanh toán
+            // Tính tổng tiền sau khi áp dụng chiết khấu
+            // Tính tổng tiền sau khi áp dụng chiết khấu
+            let finalTotal = totalPrice - discountAmount;
 
-            // Gửi từng sản phẩm vào order_details
+            // Đảm bảo tổng tiền không âm
+            if (finalTotal < 0) {
+                finalTotal = 0;
+            }
+            console.log('total', finalTotal);
+            if (totalPrice === 0) {
+                message.warning("Đơn hàng không có sản phẩm hoặc tổng tiền không hợp lệ.");
+                return;
+            }
+
+            // Cập nhật tổng tiền chi tiêu của khách hàng
+            if (phone) {
+                await updateCustomerTotal(phone, finalTotal);
+            }
+
+            // Gửi thông tin sản phẩm đã đặt vào `order_detail`
             for (const [productKey, orderItem] of Object.entries(order)) {
                 const { size, mood, quantity } = orderItem;
                 const [productID] = productKey.split("-");
@@ -276,39 +378,80 @@ const Menu = () => {
                 });
             }
 
-            // Cập nhật thông tin đơn hàng trong order_tb
+            // Cập nhật trạng thái đơn hàng
             await MainApiRequest.put(`/order/${orderInfo.id}`, {
                 phone,
                 serviceType: orderInfo.serviceType,
-                totalPrice,
+                totalPrice: finalTotal,
                 orderDate: new Date().toISOString(),
-                status,
+                status: "Đang chuẩn bị",
             });
 
+            // Reset trạng thái bàn nếu là Dine In
             if (orderInfo.serviceType === "Dine In") {
-                // Lấy thông tin bàn từ API
                 const tableResponse = await MainApiRequest.get(`/table/${orderInfo.tableID}`);
                 const tableData = tableResponse.data;
 
                 await MainApiRequest.put(`/table/${orderInfo.tableID}`, {
-                    status: "Occupied", // Cập nhật trạng thái bàn
-                    phoneOrder: phone, // Lấy từ state
-                    bookingTime: new Date().toISOString(), // Thời gian đặt
-                    seatingTime: new Date().toISOString(), // Thời gian bắt đầu ngồi
-                    seat: tableData.seat, // Sử dụng thông tin từ API
+                    status: "Occupied",
+                    phoneOrder: phone,
+                    bookingTime: new Date().toISOString(),
+                    seatingTime: new Date().toISOString(),
+                    seat: tableData.seat,
                 });
             }
-    
-            // Gọi hàm cập nhật tổng chi tiêu cho khách hàng
-            await updateCustomerTotal(phone, totalPrice);
 
-            alert("Thanh toán thành công!");
+            // Hiển thị hóa đơn
+            const template = await fetchInvoiceTemplate();
+            const rows = Object.keys(order).map((productKey, index) => {
+                const { size, mood, quantity, price } = order[productKey];
+                const [id] = productKey.split("-");
+                const product = menuList.find((p) => String(p.id) === id);
+                if (!product) return "";
+                const itemName = `${product.name}`;
+                const itemDetails = `${size}${mood ? ` - ${mood}` : ""}`;
+                const itemTotal = price * quantity;
+                return `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>
+                            <div>${itemName}</div>
+                            <div style='font-size: 0.85em; color: gray;'>${itemDetails}</div>
+                        </td>
+                        <td>${quantity}</td>
+                        <td>${price.toLocaleString()}</td>
+                        <td>${itemTotal.toLocaleString()}</td>
+                    </tr>
+                `;
+            }).join("");
+
+            const invoiceHtml = template
+                .replace("{ORDER_ID}", orderInfo?.id || "---")
+                .replace("{SERVICE_TYPE}", orderInfo?.serviceType === "Take Away" ? "Mang đi" : `Tại chỗ - ${orderInfo?.tableID || "---"}`)
+                .replace("{DATE}", new Date().toLocaleDateString())
+                .replace("{ITEM_ROWS}", rows)
+                .replace("{TOTAL_AMOUNT}", totalPrice.toLocaleString())
+                .replace("{DISCOUNT_AMOUNT}", discountAmount.toLocaleString())
+                .replace("{FINAL_TOTAL}", finalTotal.toLocaleString());
+
+            const newWindow = window.open();
+            if (newWindow) {
+                newWindow.document.write(invoiceHtml);
+                newWindow.document.close();
+            }
+
+            // Thông báo và reset trạng thái
+            message.success("Thanh toán thành công!");
+            setOrder({});
+            setCouponCode("");
+            setDiscountAmount(0);
             navigate("/order/list");
         } catch (error) {
             console.error("Error during payment:", error);
-            alert("Có lỗi xảy ra khi thanh toán!");
+            message.error("Có lỗi xảy ra khi thanh toán!");
         }
     };
+
 
     const handleSelect = (value: string) => {
         // Khi chọn một số điện thoại, tìm khách hàng từ danh sách gợi ý và điền tên vào input
@@ -331,7 +474,7 @@ const Menu = () => {
     return (
         <div className="menu-container">
             <div className="menu-left">
-                <h1 className="menu-title">Menu</h1>
+                <h2 className='h2 header-custom'>MENU</h2>
                 <div className="category-filter">
                     {categories.map((category) => (
                         <Button
@@ -353,63 +496,75 @@ const Menu = () => {
                     {currentProducts.map((product) => (
                         <Card key={product.id} className="product-card">
                             <div className="product-image" >
-                                <img src={product.imageurl} alt={product.name} />
+                                <img src={product.image} alt={product.name} />
                             </div>
-                            <div className='product-info'>
-                                <h3 style={{ fontWeight: 'bold' }}>{product.name}</h3>
+                            <div className="product-info">
+                                <h3 style={{ fontWeight: 'bold', fontSize: 20 }}>{product.name}</h3>
                                 {product.available ? (
                                     <>
-                                        <div className="size-options">
-                                            {product.sizes && (
-                                                <Button
-                                                    key="S"
-                                                    className={`size-button ${selectedSizes[product.id] === 'S' ? 'selected' : ''}`}
-                                                    onClick={() => handleSelectSize(product.id, 'S')}
-                                                >
-                                                    S
-                                                </Button>
-                                            )}
-                                            {product.sizem && (
-                                                <Button
-                                                    key="M"
-                                                    className={`size-button ${selectedSizes[product.id] === 'M' ? 'selected' : ''}`}
-                                                    onClick={() => handleSelectSize(product.id, 'M')}
-                                                >
-                                                    M
-                                                </Button>
-                                            )}
-                                            {product.sizel && (
-                                                <Button
-                                                    key="L"
-                                                    className={`size-button ${selectedSizes[product.id] === 'L' ? 'selected' : ''}`}
-                                                    onClick={() => handleSelectSize(product.id, 'L')}
-                                                >
-                                                    L
-                                                </Button>
-                                            )}
-                                        </div>
-
-                                        {(product.hot || product.cold) && (
-                                            <div className="hot-cold-options">
-                                                {product.hot && (
-                                                    <Button
-                                                        className={`mood-button ${selectedMoods[product.id] === 'Nóng' ? 'selected' : ''}`}
-                                                        onClick={() => handleSelectMood(product.id, 'Nóng')}
-                                                    >
-                                                        Nóng
-                                                    </Button>
-                                                )}
-                                                {product.cold && (
-                                                    <Button
-                                                        className={`mood-button ${selectedMoods[product.id] === 'Lạnh' ? 'selected' : ''}`}
-                                                        onClick={() => handleSelectMood(product.id, 'Lạnh')}
-                                                    >
-                                                        Lạnh
-                                                    </Button>
-                                                )}
+                                        {/* Size Options */}
+                                        {product.sizes || product.sizem || product.sizel ? (
+                                            <div style={{ display: 'flex' }}>
+                                                <span style={{ marginRight: 4, alignSelf: 'center' }}>Size:</span>
+                                                <div className="size-options">
+                                                    {product.sizes && (
+                                                        <Button
+                                                            key="S"
+                                                            className={`size-button ${selectedSizes[product.id] === 'S' ? 'selected' : ''}`}
+                                                            onClick={() => handleSelectSize(product.id, 'S')}
+                                                        >
+                                                            S
+                                                        </Button>
+                                                    )}
+                                                    {product.sizem && (
+                                                        <Button
+                                                            key="M"
+                                                            className={`size-button ${selectedSizes[product.id] === 'M' ? 'selected' : ''}`}
+                                                            onClick={() => handleSelectSize(product.id, 'M')}
+                                                        >
+                                                            M
+                                                        </Button>
+                                                    )}
+                                                    {product.sizel && (
+                                                        <Button
+                                                            key="L"
+                                                            className={`size-button ${selectedSizes[product.id] === 'L' ? 'selected' : ''}`}
+                                                            onClick={() => handleSelectSize(product.id, 'L')}
+                                                        >
+                                                            L
+                                                        </Button>
+                                                    )}
+                                                </div>
                                             </div>
-                                        )}
-                                        <div style={{ display: 'flex' }}>
+                                        ) : null}
+
+                                        {/* Mood Options */}
+                                        {product.hot && product.cold ? (
+                                            <div style={{ display: 'flex' }}>
+                                                <span style={{ marginRight: 4, alignSelf:'center' }}>Mood:</span>
+                                                <div className="hot-cold-options">
+                                                    {product.hot && (
+                                                        <Button
+                                                            className={`mood-button ${selectedMoods[product.id] === 'Nóng' ? 'selected' : ''}`}
+                                                            onClick={() => handleSelectMood(product.id, 'Nóng')}
+                                                        >
+                                                            Nóng
+                                                        </Button>
+                                                    )}
+                                                    {product.cold && (
+                                                        <Button
+                                                            className={`mood-button ${selectedMoods[product.id] === 'Lạnh' ? 'selected' : ''}`}
+                                                            onClick={() => handleSelectMood(product.id, 'Lạnh')}
+                                                        >
+                                                            Lạnh
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ) : null}
+
+                                        {/* Price and Add to Order Button */}
+                                        <div style={{ display: 'flex', marginTop: 10 }}>
                                             <div className="price" style={{ bottom: 0, paddingRight: 10, paddingTop: 10 }}>
                                                 Giá: {selectedSizes[product.id] === 'M'
                                                     ? product.price + product.upsize
@@ -418,11 +573,11 @@ const Menu = () => {
                                                         : product.price}
                                             </div>
                                             <Button
-                                                className="select-button"
+                                                className="select-button" 
                                                 onClick={() => handleAddToOrder(product.id, selectedSizes[product.id])}
                                                 disabled={
                                                     !selectedSizes[product.id] ||
-                                                    (product.hot || product.cold) && !selectedMoods[product.id]
+                                                    (product.hot && product.cold && !selectedMoods[product.id]) // Bắt buộc chọn mood nếu có cả hot và cold
                                                 }
                                             >
                                                 Chọn
@@ -435,6 +590,7 @@ const Menu = () => {
                                     </div>
                                 )}
                             </div>
+
                         </Card>
                     ))}
                 </div>
@@ -449,7 +605,7 @@ const Menu = () => {
 
             <div className="menu-right">
                 <h2 style={{ textAlign: 'center', fontSize: 24, fontWeight: 'bold' }}>HÓA ĐƠN</h2>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
                     <label style={{ fontWeight: 'bold' }}>
                         Mã HĐ: {orderInfo?.id || '---'}
                     </label>
@@ -460,7 +616,7 @@ const Menu = () => {
                     </label>
                 </div>
                 <div className="customer-info">
-                    <Button onClick={handleOpenModal}><i className='fas fa-user-plus'></i></Button>
+                    <Button onClick={handleOpenModal} style={{ marginBottom: 5 }}><i className='fas fa-user-plus'></i></Button>
                     <Modal
                         title="Thêm mới khách hàng"
                         visible={isModalVisible}
@@ -478,7 +634,7 @@ const Menu = () => {
                                 label="Tên"
                                 rules={[{ required: true, message: 'Please enter the name' }]}
                             >
-                                <Input/>
+                                <Input />
                             </Form.Item>
 
                             <Form.Item
@@ -489,7 +645,7 @@ const Menu = () => {
                                     { pattern: /^[0-9]+$/, message: 'Please enter a valid phone number' },
                                 ]}
                             >
-                                <Input/>
+                                <Input />
                             </Form.Item>
 
                             <Form.Item name="gender" label="Giới tính">
@@ -517,6 +673,7 @@ const Menu = () => {
                         </Form>
                     </Modal>
                     <AutoComplete
+                        className='ant-select-selection-search'
                         value={phone}
                         onChange={(value) => {
                             setPhone(value);  // Cập nhật giá trị ô input
@@ -528,8 +685,9 @@ const Menu = () => {
                             label: `${suggestion.phone} - ${suggestion.name}`,  // Hiển thị số điện thoại và tên
                         }))}
                         placeholder="Số điện thoại khách hàng"
+                        style={{ marginBottom: 5 }}
                     >
-                        <Input style={{ width: 357 }} />
+                        <Input />
                     </AutoComplete>
                     <Input placeholder="Tên khách hàng" value={name} />
                     <Input placeholder="Ngày cập nhật" disabled value={new Date().toLocaleString()} />
@@ -545,16 +703,28 @@ const Menu = () => {
                             const product = menuList.find((p) => String(p.id) === id);
                             return product ? (
                                 <div key={productKey} className="order-item-card">
-                                    <img src={product.imageurl} alt={product.name} className="order-item-image" />
+                                    <img src={product.image} alt={product.name} className="order-item-image" />
                                     <div>
                                         <div>{product.name}</div>
-                                        <div>Size: {size}, Mood: {mood}</div>
+                                        <div>Size: {size} {mood && `, Mood: ${mood}`}</div>
                                         <div>Giá: {price * quantity}</div>
                                     </div>
                                     <div className="quantity-controls">
-                                        <Button onClick={() => handleDecreaseQuantity(id, size, product.hot || product.cold ? mood : '')}>-</Button>
-                                        <span>{quantity}</span>
-                                        <Button onClick={() => handleIncreaseQuantity(id, size, product.hot || product.cold ? mood : '')}>+</Button>
+                                        <Input
+                                            type="number"
+                                            min={1}
+                                            value={quantity}
+                                            onChange={(e) => {
+                                                const newQuantity = parseInt(e.target.value, 10) || 1;
+                                                setOrder((prevOrder) => {
+                                                    const key = `${id}-${size}-${product.hot || product.cold ? mood : ''}`;
+                                                    const updatedOrder = { ...prevOrder };
+                                                    updatedOrder[key].quantity = newQuantity; // Cập nhật số lượng
+                                                    return updatedOrder;
+                                                });
+                                            }}
+                                            style={{ width: 60, textAlign: "center" }}
+                                        />
                                     </div>
                                     <Button
                                         className="remove-button"
@@ -568,6 +738,15 @@ const Menu = () => {
                     </div>
                 </div>
                 <div className="total-info">
+                    <div className="discount-input">
+                        <Input
+                            placeholder="Nhập mã giảm giá"
+                            value={couponCode}
+                            onChange={(e) => setCouponCode(e.target.value)}
+                            style={{ width: '70%', marginRight: '5px', marginLeft: 5, marginBottom: 5 }}
+                        />
+                        <Button onClick={handleApplyCoupon} style={{ width: '25%', marginRight: 5 }}>Áp dụng</Button>
+                    </div>
                     <div className="total-info-item">
                         <span className="label">Tổng số món:</span>
                         <span className="value">
@@ -583,7 +762,21 @@ const Menu = () => {
                             )}
                         </span>
                     </div>
-                    <Button className="button" onClick={handlePayment}>Thanh Toán</Button>
+                    <div className="total-info-item">
+                        <span className="label">Chiết khấu:</span>
+                        <span className="value" style={{ color: 'red', fontWeight: 'bold' }}>
+                            - {discountAmount.toLocaleString()} VND
+                        </span>
+                    </div>
+
+                    {/* Tổng hóa đơn */}
+                    <div className="total-info-item">
+                        <span className="label" style={{fontWeight: 'bold'}}>Tổng hóa đơn:</span>
+                        <span className="value" style={{ fontWeight: 'bold' }}>
+                            {Math.max(0, totalPrice - discountAmount).toLocaleString()} VND
+                        </span>
+                    </div>
+                    <Button className="button" style={{height: 50, fontSize: 20}} onClick={handlePayment}>Thanh Toán</Button>
                 </div>
             </div>
         </div >
