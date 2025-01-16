@@ -25,6 +25,7 @@ const mappingColor = (status: string, value: boolean) => {
       return 'gray'; // Màu mặc định nếu không khớp
   }
 };
+
 const ProductList = () => {
   const [form] = Form.useForm();
   const [progress, setProgress] = useState(0);
@@ -32,11 +33,11 @@ const ProductList = () => {
   const [openCreateProductModal, setOpenCreateProductModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
   const [fileList, setFileList] = useState<any[]>([]);
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [imageUrl, setImageUrl] = useState<string>("");
 
   const handleChange = (info: any) => {
-    setFileList(info.fileList);
-    console.log("info: ", info);
+    const file = info.fileList[0];
+    setFileList(file ? [file] : []);
   };
 
   const handleUpload = async (options: UploadRequestOption) => {
@@ -51,27 +52,25 @@ const ProductList = () => {
         if (percent === 100) {
           setTimeout(() => setProgress(0), 1000);
         }
-        onProgress && onProgress({ percent: (event.loaded / event.total) * 100 });
-      }
+        onProgress && onProgress({ percent });
+      },
     };
     fmData.append("file", file);
     try {
       const res = await MainApiRequest.post("/file/upload", fmData, config);
       const { data } = res;
-      setImageUrls([...imageUrls, data.url]);
+      setImageUrl(data.imageUrl);
       onSuccess && onSuccess("Ok");
-    } catch (err: any) {
-      console.log("Eroor: ", err);
-      const error = new Error("Some error");
-      onError && onError(error);
+    } catch (err) {
+      console.error("Error:", err);
+      onError && onError(new Error("Upload failed"));
     }
-  }
+  };
 
-  const handlePreview = async (file: any) => {
-    if (!file.url && !file.preview) {
-      file.preview = await getBase64(file.originFileObj);
-    }
-  }
+  const handleRemove = () => {
+    setFileList([]);
+    setImageUrl("");
+  };
 
   const fetchProductList = async () => {
     const res = await MainApiRequest.get('/product/list');
@@ -87,84 +86,53 @@ const ProductList = () => {
   };
 
   const onOKCreateProduct = async () => {
-    try {
-      const data = form.getFieldsValue();
-
-      //Chuẩn bị dữ liệu cần gửi API
-      const payload = {
-        ...data,
-        price: data.price_S, // Giá size S
-        upsize: data.price_M - data.price_S, // Giá chênh lệch giữa size M và size S
-        images: imageUrls,
-      }
-      
-      if (editingProduct) {
-        // Gửi yêu cầu cập nhật thông tin sản phẩm
-        await MainApiRequest.put(`/product/${editingProduct.id}`, payload);
-      } else {
-        await MainApiRequest.post('/product', payload);
-      }
-
-      console.log("data: ", data);
-      fetchProductList(); // Làm mới danh sách sản phẩm
-      setOpenCreateProductModal(false);
-      form.resetFields();
-      setEditingProduct(null);
-
-    } catch (error) {
-      console.error('Error creating product:', error);
-      message.error('Failed to create product. Please try again.');
-    }
+    if (!imageUrl) {
+      message.error("Image is required. Please upload an image.");
+      return;
   }
 
-  const onCancelCreateProduct = () => {
     setOpenCreateProductModal(false);
+    const data = {
+      name: form.getFieldValue('name'),
+      price: parseInt(form.getFieldValue('price_S') || "0"),
+      upsize: parseInt(form.getFieldValue('price_M') || "0") - parseInt(form.getFieldValue('price_S') || "0"),
+      image: imageUrl || "",
+      category: form.getFieldValue('category'),
+    };
+
+    if (editingProduct) {
+      await MainApiRequest.put(`/product/${editingProduct.id}`, data);
+    } else {
+      await MainApiRequest.post('/product', data);
+    }
+
+    fetchProductList();
     setEditingProduct(null);
     form.resetFields();
   };
 
   const onEditProduct = (record: any) => {
     setEditingProduct(record);
-
-    // Ánh xạ đầy đủ các trường thông tin vào form
     form.setFieldsValue({
       ...record,
-      price_S: record.price, // Giá size S
-      price_M: record.price + (record.upsize || 0), // Giá size M
-      price_L: record.price + (record.upsize || 0) * 2, // Giá size L
-      imageUrl: record.images?.[0] || null, // Lấy hình ảnh đầu tiên
+      price_S: record.price,
+      price_M: record.price + (record.upsize || 0),
+      price_L: record.price + (record.upsize || 0) * 2,
+      imageUrl: record.image,
     });
-  
-    // Thiết lập danh sách file hình ảnh
-    setFileList(
-      record.images?.map((image: string, index: number) => ({
-        uid: index.toString(),
-        name: `Product_Image_${index + 1}.png`,
-        status: "done",
-        url: image,
-      })) || []
-    );
-  
-    // Lưu danh sách URL hình ảnh
-    setImageUrls(record.images || []);
+    setFileList(record.image ? [{
+      uid: "1",
+      name: record.name + ".png",
+      status: 'done',
+      url: record.image,
+    }] : []);
+    setImageUrl(record.image || "");
     setOpenCreateProductModal(true);
-  }
-
-  const onDeleteProduct = async (id: number) => {
-    try {
-      await MainApiRequest.delete(`/product/${id}`);
-      fetchProductList();
-      message.success('Xóa sản phẩm thành công.');
-    } catch (error) {
-      console.error('Error deleting product:', error);
-      message.error('Failed to delete product. Please try again.');
-    }
   };
 
-  const handleRemove = (file: any) => {
-    const newFileList = fileList.filter((item) => item.uid !== file.uid);
-    setFileList(newFileList);
-    setImageUrls(imageUrls.filter((url) => url !== file.url));
+  const onDeleteProduct = async (id: number) => {
+    await MainApiRequest.delete(`/product/${id}`);
+    fetchProductList();
   };
 
   const onToggleProductStatus = async (record: any) => {
@@ -201,8 +169,8 @@ const ProductList = () => {
         className="product-modal"
         title={editingProduct ? "Chỉnh sửa sản phẩm" : "Thêm mới sản phẩm"}
         open={openCreateProductModal}
-        onOk={() => onOKCreateProduct()}
-        onCancel={() => onCancelCreateProduct()}
+        onOk={onOKCreateProduct}
+        onCancel={() => setOpenCreateProductModal(false)}
       >
         <Form
           form={form}
@@ -210,7 +178,7 @@ const ProductList = () => {
         >
           <Form.Item
             label="Hình ảnh"
-            name="imageURL"
+            name="image"
             valuePropName="fileList"
             getValueFromEvent={(e) => e.fileList}
           >
@@ -219,18 +187,18 @@ const ProductList = () => {
                 listType="picture-card"
                 fileList={fileList}
                 accept="image/*"
-                onPreview={handlePreview}
+                onPreview={() => {}}
                 customRequest={handleUpload}
                 onRemove={handleRemove}
                 onChange={handleChange}
               >
-                {fileList.length >= 5 ? null : (
-                <button style={{ border: 0, background: 'none' }} type="button">
+              {fileList.length < 1 && (
+                <div>
                   <PlusOutlined />
-                  <div style={{ marginTop: 8 }}>Tải lên</div>
-                </button>
-                )}
-              </Upload>
+                  <div>Tải lên</div>
+                </div>
+              )}
+            </Upload>
               {progress > 0 ? <Progress percent={progress} /> : null}
             </div>
           </Form.Item>
@@ -295,8 +263,8 @@ const ProductList = () => {
         columns={[
           {
             title: 'Hình ảnh',
-            dataIndex: 'imageurl',
-            key: 'imageurl',
+            dataIndex: 'image',
+            key: 'image',
             render: (image: string) => (
               <img
                 src={image || imgDefault}

@@ -7,79 +7,66 @@ import imgProfile from '../../assets/profile.jpg';
 
 const ProfileUser = () => {
   const [loading, setLoading] = useState(false);
-  const [profile, setProfile] = useState<{    
-    id: number | null;
-    name: string;
-    gender: string;
-    birth: string;
-    address: string;
-    phone: string;
-    workHours: number | null;
-    minSalary: number | null;
-    typeStaff: string;
-    startDate: string;
-  }>({    
-    id: null,
-    name: "",
-    gender: "",
-    birth: "",
-    address: "",
-    phone: "",
-    workHours: null,
-    minSalary: null,
-    typeStaff: "",
-    startDate: "",
-  });
+
+  const [id, setId] = useState<number | null>(null);
+  const [name, setName] = useState<string>("");
+  const [gender, setGender] = useState<string>("");
+  const [birth, setBirth] = useState<string>("");
+  const [address, setAddress] = useState<string>("");
+  const [phone, setPhone] = useState<string>("");
+  const [workHours, setWorkHours] = useState<number | null>(null);
+  const [minSalary, setMinSalary] = useState<number | null>(null);
+  const [typeStaff, setTypeStaff] = useState<string>("");
+  const [startDate, setStartDate] = useState<string>("");
+  
 
    // Lấy thông tin từ /auth/callback và /staff/{id}
-   const fetchUserProfile = async () => {
+  const fetchUserProfile = async () => {
     try {
-      setLoading(true);
-
-      // Lấy thông tin tài khoản từ /auth/callback
-      const authResponse = await MainApiRequest.get("/auth/callback");
-      const authData = authResponse.data.data;
-
-      // Cập nhật ID trước
-      const userId = authData.id;
-      setProfile((prev) => ({ ...prev, id: userId }));
-
-      // Lấy thông tin chi tiết từ /staff/{id}
-      const staffResponse = await MainApiRequest.get(`/staff/${userId}`);
-      const staffData = staffResponse.data.data;
-
-      setProfile((prev) => ({
-        ...prev,
-        ...staffData,
-      }));
+      const res = await MainApiRequest.get("/auth/callback");
+      setId(res.data.data.id);
+      setName(res.data.data.name);
+      setGender(res.data.data.gender);
+      setBirth(res.data.data.birth);
+      setAddress(res.data.data.address);
+      setPhone(res.data.data.phone);
+      setWorkHours(res.data.data.workHours);
+      setMinSalary(res.data.data.minSalary);
+      setTypeStaff(res.data.data.typeStaff);
+      setStartDate(res.data.data.startDate);
     } catch (error) {
       console.error("Lỗi khi lấy thông tin tài khoản:", error);
-      message.error("Không thể tải thông tin tài khoản. Vui lòng thử lại!");
+    }
+  }
+    useEffect(() => {
+      fetchUserProfile();
+    }, []);
+  
+
+
+  const handleUpdateProfile = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const updateData = {
+      name,
+      gender,
+      birth,
+      address,
+      phone,
+      workHours,
+      typeStaff,
+    };
+    try {
+      await MainApiRequest.put(`/staff/${id}`, updateData);
+      message.success("Cập nhật thông tin thành công");
+    } catch (error) {
+      console.error("Lỗi khi cập nhật thông tin tài khoản:", error);
+      message.error("Cập nhật thông tin thất bại");
     } finally {
       setLoading(false);
     }
   };
-
-    // Cập nhật thông tin tài khoản
-    const handleUpdateProfile = async (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      setLoading(true);
-  
-      try {
-        await MainApiRequest.put(`/staff/${profile.id}`, profile);
-        message.success("Cập nhật thông tin thành công!");
-      } catch (error) {
-        console.error("Lỗi khi cập nhật thông tin:", error);
-        message.error("Cập nhật thất bại, vui lòng thử lại.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-  useEffect(() => {
-    fetchUserProfile();
-  }, []);
-
 
   return (
     <div className="container-fluid m-2">
@@ -92,8 +79,8 @@ const ProfileUser = () => {
               alt="Avatar"
               className="profile-avatar"
             />
-            <h4>{profile.name || "Họ và tên"}</h4>
-            <p>{profile.typeStaff || "Loại nhân viên"}</p>
+            <h4>{name || "Họ và tên"}</h4>
+            <p>{typeStaff || "Loại nhân viên"}</p>
           </Col>
           <Col md={8}>
             <Card className="profile-details mt-2">
@@ -107,16 +94,16 @@ const ProfileUser = () => {
                           <Form.Control
                             type="text"
                             placeholder="Nhập tên của bạn"
-                            value={profile.name}
-                            onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
                           />
                         </Form.Group>
                         <Form.Group controlId="birth" className="mb-3">
                           <Form.Label>Ngày sinh</Form.Label>
                           <Form.Control
                             type="date"
-                            value={profile.birth}
-                            onChange={(e) => setProfile({ ...profile, birth: e.target.value })}
+                            value={birth}
+                            onChange={(e) => setBirth(e.target.value)}
                           />
                         </Form.Group>
                         <Form.Group controlId="address" className="mb-3">
@@ -124,8 +111,8 @@ const ProfileUser = () => {
                           <Form.Control
                             type="text"
                             placeholder="Nhập địa chỉ"
-                            value={profile.address}
-                            onChange={(e) => setProfile({ ...profile, address: e.target.value })}
+                            value={address}
+                            onChange={(e) => setAddress(e.target.value)}
                           />
                         </Form.Group>
                         <Form.Group controlId="minSalary" className="mb-3">
@@ -133,28 +120,32 @@ const ProfileUser = () => {
                           <Form.Control
                             type="number"
                             placeholder="Nhập lương cơ bản"
-                            value={profile.minSalary ?? ''}
-                            onChange={(e) => setProfile({ ...profile, minSalary: e.target.value ? parseInt(e.target.value) : null })}
+                            value={minSalary ?? ""}
+                            onChange={(e) => setMinSalary(e.target.value ? parseInt(e.target.value) : null)}
                           />
                         </Form.Group>
                       </Col>
                       <Col md={6}>
                       <Form.Group controlId="gender" className="mb-3">
-                          <Form.Label>Giới tính</Form.Label>
-                          <Form.Control
-                            type="text"
-                            placeholder="Nam/Nữ"
-                            value={profile.gender}
-                            onChange={(e) => setProfile({ ...profile, gender: e.target.value })}
-                          />
-                        </Form.Group>
+                        <Form.Label>Giới tính</Form.Label>
+                        <Form.Control
+                          as="select"
+                          value={gender}
+                          onChange={(e) => setGender(e.target.value)}
+                        >
+                          <option value="">Chọn giới tính</option>
+                          <option value="Nam">Nam</option>
+                          <option value="Nữ">Nữ</option>
+                          <option value="Khác">Khác</option>
+                        </Form.Control>
+                      </Form.Group>
                         <Form.Group controlId="phone" className="mb-3">
                           <Form.Label>Số điện thoại</Form.Label>
                           <Form.Control
                             type="text"
                             placeholder="Nhập số điện thoại"
-                            value={profile.phone}
-                            onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
                           />
                         </Form.Group>
                         <Form.Group controlId="typeStaff" className="mb-3">
@@ -162,8 +153,8 @@ const ProfileUser = () => {
                           <Form.Control
                             type="text"
                             placeholder="Nhập loại nhân viên"
-                            value={profile.typeStaff}
-                            onChange={(e) => setProfile({ ...profile, typeStaff: e.target.value })}
+                            value={typeStaff}
+                            onChange={(e) => setTypeStaff(e.target.value)}
                           />
                         </Form.Group>
                         <Form.Group controlId="workHours" className="mb-3">
@@ -171,8 +162,8 @@ const ProfileUser = () => {
                           <Form.Control
                             type="number"
                             placeholder="Nhập giờ làm việc"
-                            value={profile.workHours ?? ""}
-                            onChange={(e) => setProfile({ ...profile, workHours: e.target.value ? parseInt(e.target.value) : null })}
+                            value={workHours ?? ""}
+                            onChange={(e) => setWorkHours(e.target.value ? parseInt(e.target.value) : null)}
                           />
                         </Form.Group>
 
@@ -198,3 +189,5 @@ const ProfileUser = () => {
 };
 
 export default ProfileUser;
+
+
