@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Form, Button, Card, Accordion, DropdownMenu } from "react-bootstrap";
-import { Spin, message } from "antd";
+import { DatePicker, Spin, message } from "antd";
 import { MainApiRequest } from "@/services/MainApiRequest";
 import "./ProfileUser.scss";
 import imgProfile from '../../assets/profile.jpg';
+import { m } from "framer-motion";
+import moment from "moment";
 
 const ProfileUser = () => {
   const [loading, setLoading] = useState(false);
@@ -11,11 +13,11 @@ const ProfileUser = () => {
   const [id, setId] = useState<number | null>(null);
   const [name, setName] = useState<string>("");
   const [gender, setGender] = useState<string>("");
-  const [birth, setBirth] = useState<string>("");
+  const [birth, setBirth] = useState<moment.Moment | null>(null); // Sử dụng moment để lưu trữ ngày sinh
   const [address, setAddress] = useState<string>("");
   const [phone, setPhone] = useState<string>("");
   const [workHours, setWorkHours] = useState<number | null>(null);
-  const [minSalary, setMinSalary] = useState<number | null>(null);
+  const [minsalary, setMinSalary] = useState<number | null>(null);
   const [typeStaff, setTypeStaff] = useState<string>("");
   const [startDate, setStartDate] = useState<string>("");
   
@@ -24,16 +26,19 @@ const ProfileUser = () => {
   const fetchUserProfile = async () => {
     try {
       const res = await MainApiRequest.get("/auth/callback");
-      setId(res.data.data.id);
-      setName(res.data.data.name);
-      setGender(res.data.data.gender);
-      setBirth(res.data.data.birth);
-      setAddress(res.data.data.address);
-      setPhone(res.data.data.phone);
-      setWorkHours(res.data.data.workHours);
-      setMinSalary(res.data.data.minSalary);
-      setTypeStaff(res.data.data.typeStaff);
-      setStartDate(res.data.data.startDate);
+      const data = res.data.data;
+      setId(data.id);
+      setName(data.name);
+      setGender(data.gender);
+      setBirth(moment(data.birth)); // Chuyển đổi ngày sinh từ ISO 8601 sang Moment object
+      setAddress(data.address);
+      setPhone(data.phone);
+      setWorkHours(data.workHours);
+      setMinSalary(data.minsalary);
+      setTypeStaff(data.typeStaff);
+      setStartDate(data.startDate);
+
+      console.log("Thông tin tài khoản:", data);
     } catch (error) {
       console.error("Lỗi khi lấy thông tin tài khoản:", error);
     }
@@ -51,11 +56,12 @@ const ProfileUser = () => {
     const updateData = {
       name,
       gender,
-      birth,
+      birth: birth ? birth.format("YYYY-MM-DD") : "", // Chuyển ngày sinh sang định dạng YYYY-MM-DD khi gửi API
       address,
       phone,
       workHours,
       typeStaff,
+      minsalary,
     };
     try {
       await MainApiRequest.put(`/staff/${id}`, updateData);
@@ -100,10 +106,11 @@ const ProfileUser = () => {
                         </Form.Group>
                         <Form.Group controlId="birth" className="mb-3">
                           <Form.Label>Ngày sinh</Form.Label>
-                          <Form.Control
-                            type="date"
-                            value={birth}
-                            onChange={(e) => setBirth(e.target.value)}
+                          <DatePicker
+                            value={birth} // Giới thiệu DatePicker từ antd
+                            format="DD-MM-YYYY" // Hiển thị định dạng DD-MM-YYYY
+                            onChange={(date) => setBirth(date)} // Cập nhật giá trị khi người dùng chọn ngày
+                            style={{ width: "100%" }}
                           />
                         </Form.Group>
                         <Form.Group controlId="address" className="mb-3">
@@ -118,9 +125,10 @@ const ProfileUser = () => {
                         <Form.Group controlId="minSalary" className="mb-3">
                           <Form.Label>Lương cơ bản</Form.Label>
                           <Form.Control
+                          disabled
                             type="number"
-                            placeholder="Nhập lương cơ bản"
-                            value={minSalary ?? ""}
+                            placeholder="Lương cơ bản"
+                            value={minsalary ?? ""}
                             onChange={(e) => setMinSalary(e.target.value ? parseInt(e.target.value) : null)}
                           />
                         </Form.Group>
