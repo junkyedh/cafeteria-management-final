@@ -1,17 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { Chart } from 'react-chartjs-2';
 import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
     BarElement,
+    CategoryScale,
+    Chart as ChartJS,
+    Legend,
+    LinearScale,
     LineElement,
     PointElement,
     Title,
-    Tooltip,
-    Legend
+    Tooltip
 } from 'chart.js';
 import moment from 'moment';
+import { useEffect, useState } from 'react';
+import { Chart } from 'react-chartjs-2';
 
 ChartJS.register(
     CategoryScale,

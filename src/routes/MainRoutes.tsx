@@ -3,21 +3,20 @@ import { useSystemContext } from "@/hooks/useSystemContext";
 import { useEffect } from "react";
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
-import { message } from "antd";
 import Layout from "@/layouts/Layout/Layout";
-import CustomerList from "@/pages/CustomerList/CustomerList";
+import { routePath } from "@/layouts/Navbar/Navbar";
 import PageNotFound from "@/layouts/PageNotFound";
-import ProfileUser from "@/pages/ProfileUser/ProfileUser";
-import StaffList from "@/pages/StaffList/StaffList";
+import CustomerList from "@/pages/CustomerList/CustomerList";
+import Login from "@/pages/Login/Login";
 import MaterialList from "@/pages/MaterialList/MaterialList";
-import ProductList from "@/pages/ProductList/ProductList";
-import Promote from "@/pages/Promote/Promote";
+import Menu from "@/pages/Menu/Menu";
 import OrderList from "@/pages/OrderList/OrderList";
+import ProductList from "@/pages/ProductList/ProductList";
+import ProfileUser from "@/pages/ProfileUser/ProfileUser";
+import Promote from "@/pages/Promote/Promote";
+import StaffList from "@/pages/StaffList/StaffList";
 import Statistic from "@/pages/Statistic/Statistic";
 import TableOrder from "@/pages/TableOrder/TableOrder";
-import Menu from "@/pages/Menu/Menu";
-import { routePath } from "@/layouts/Navbar/Navbar";
-import Login from "@/pages/Login/Login";
 
 export default function MainRoutes() {
   const navigate = useNavigate();

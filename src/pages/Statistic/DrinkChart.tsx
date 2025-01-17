@@ -8,7 +8,7 @@ import {
     Tooltip
 } from 'chart.js';
 import { useEffect, useState } from 'react';
-import { Bar, Doughnut, Line } from 'react-chartjs-2';
+import { Doughnut } from 'react-chartjs-2';
 
 ChartJS.register(
     ArcElement,

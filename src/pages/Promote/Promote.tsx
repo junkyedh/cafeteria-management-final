@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { Button, Form, Input, DatePicker, Modal, Table, Select, Popconfirm, message, Space, Tag } from 'antd';
-import moment from 'moment';
-import "./Promote.scss";
 import { MainApiRequest } from '@/services/MainApiRequest';
+import { Button, DatePicker, Form, Input, message, Modal, Popconfirm, Select, Space, Table, Tag } from 'antd';
+import moment from 'moment';
+import { useEffect, useState } from 'react';
+import "./Promote.scss";
 
 const Promote = () => {
     const [form] = Form.useForm();

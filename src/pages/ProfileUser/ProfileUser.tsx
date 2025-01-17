@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Form, Button, Card} from "react-bootstrap";
-import moment from "moment";
 import { MainApiRequest } from "@/services/MainApiRequest";
-import "./ProfileUser.scss";
-import imgProfile from "../../assets/profile.jpg";
 import { message, Spin } from "antd";
+import moment from "moment";
+import React, { useEffect, useState } from "react";
+import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
+import imgProfile from "../../assets/profile.jpg";
+import "./ProfileUser.scss";
 
 const ProfileUser = () => {
   const [loading, setLoading] = useState(false);

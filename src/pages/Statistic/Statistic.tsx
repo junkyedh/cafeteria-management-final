@@ -1,16 +1,16 @@
+import { MainApiRequest } from '@/services/MainApiRequest';
 import React, { useEffect, useState } from 'react';
 import { Card } from 'react-bootstrap';
-import './Statistic.scss';
-import { MainApiRequest } from '@/services/MainApiRequest';
-import Top5Drinks from './Top5Drinks';
-import DrinkChart from './DrinkChart';
 import CustomerRankChart from './CustomerRankChart';
-import OrderType from './OrderType';
+import DrinkChart from './DrinkChart';
 import OrderRevenue14 from './OrderRevenue14';
-import Revenue30Days from './Revenue30Days';
+import OrderRevenue30 from './OrderRevenue30';
 import OrdersChart14 from './OrdersChart14';
 import OrdersChart30 from './OrdersChart30';
-import OrderRevenue30 from './OrderRevenue30';
+import OrderType from './OrderType';
+import Revenue30Days from './Revenue30Days';
+import './Statistic.scss';
+import Top5Drinks from './Top5Drinks';
 
 
 
