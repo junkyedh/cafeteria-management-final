@@ -6,39 +6,11 @@ import Top5Drinks from './Top5Drinks';
 import DrinkChart from './DrinkChart';
 import CustomerRankChart from './CustomerRankChart';
 import OrderType from './OrderType';
-import Revenue14Days from './Revenue14Days';
 import OrderRevenue14 from './OrderRevenue14';
 import Revenue30Days from './Revenue30Days';
 import OrdersChart14 from './OrdersChart14';
 import OrdersChart30 from './OrdersChart30';
 import OrderRevenue30 from './OrderRevenue30';
-
-// Fake data for cafe dashboard
-// const fakeData = {
-//   totalDrinks: 150,
-//   totalCustomers: 450,
-//   totalOrders: 350,
-//   totalRevenue: 75000000, // VND
-//   chartData: {
-//     drinksByCategory: [
-//       { category: 'Cà phê', amount: 70 },
-//       { category: 'Trà', amount: 50 },
-//       { category: 'Sinh tố', amount: 30 },
-//       { category: 'Nước ép', amount: 20 },
-//     ],
-//     revenue: [
-//       { month: 'Jan', value: 15000000 },
-//       { month: 'Feb', value: 20000000 },
-//       { month: 'Mar', value: 25000000 },
-//       { month: 'Apr', value: 15000000 },
-//     ],
-//     orders: [
-//       { status: 'Đã xác nhận', count: 300 },
-//       { status: 'Chờ xử lý', count: 40 },
-//       { status: 'Đã hủy', count: 10 },
-//     ],
-//   },
-// };
 
 
 
@@ -129,8 +101,8 @@ const Statistic: React.FC = () => {
 
       {/* Các biểu đồ còn lại */}
       <div className="charts-row">
-          <Top5Drinks data={chartData}/>
           <DrinkChart data={chartData}/>
+          <Top5Drinks data={chartData}/>
           <CustomerRankChart data={chartData}/>
           <OrderType data={chartData}/>
       </div>

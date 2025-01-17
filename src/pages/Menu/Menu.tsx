@@ -480,7 +480,8 @@ const Menu = () => {
                         <Button
                             key={category}
                             onClick={() => setSelectedCategory(category)}
-                            type={selectedCategory === category ? 'primary' : 'default'}
+                            type={selectedCategory === category ? 'primary' : 'default'} // Sử dụng kiểu primary cho nút được chọn
+                            className="ant-btn"
                         >
                             {category}
                         </Button>
@@ -541,7 +542,7 @@ const Menu = () => {
                                         {/* Mood Options */}
                                         {product.hot && product.cold ? (
                                             <div style={{ display: 'flex' }}>
-                                                <span style={{ marginRight: 4, alignSelf:'center' }}>Mood:</span>
+                                                <span style={{ marginRight: 4, alignSelf: 'center' }}>Mood:</span>
                                                 <div className="hot-cold-options">
                                                     {product.hot && (
                                                         <Button
@@ -565,15 +566,18 @@ const Menu = () => {
 
                                         {/* Price and Add to Order Button */}
                                         <div style={{ display: 'flex', marginTop: 10 }}>
-                                            <div className="price" style={{ bottom: 0, paddingRight: 10, paddingTop: 10 }}>
-                                                Giá: {selectedSizes[product.id] === 'M'
-                                                    ? product.price + product.upsize
-                                                    : selectedSizes[product.id] === 'L'
-                                                        ? product.price + product.upsize * 2
-                                                        : product.price}
+                                            <div className="price">
+                                                <span>Giá:</span>
+                                                <span>
+                                                    {selectedSizes[product.id] === 'M'
+                                                        ? product.price + product.upsize
+                                                        : selectedSizes[product.id] === 'L'
+                                                            ? product.price + product.upsize * 2
+                                                            : product.price}
+                                                </span>
                                             </div>
                                             <Button
-                                                className="select-button" 
+                                                className="select-button"
                                                 onClick={() => handleAddToOrder(product.id, selectedSizes[product.id])}
                                                 disabled={
                                                     !selectedSizes[product.id] ||
@@ -594,13 +598,14 @@ const Menu = () => {
                         </Card>
                     ))}
                 </div>
-                <Pagination
-                    current={currentPage}
-                    pageSize={pageSize}
-                    total={filteredProducts.length}
-                    onChange={handlePageChange}
-                    showSizeChanger={false} // Bạn có thể bật nếu muốn thay đổi kích thước trang
-                />
+                <div className="pagination">
+                    <Pagination
+                        current={currentPage}
+                        pageSize={pageSize}
+                        total={filteredProducts.length}
+                        onChange={handlePageChange}
+                    />
+                </div>
             </div>
 
             <div className="menu-right">
@@ -771,12 +776,12 @@ const Menu = () => {
 
                     {/* Tổng hóa đơn */}
                     <div className="total-info-item">
-                        <span className="label" style={{fontWeight: 'bold'}}>Tổng hóa đơn:</span>
+                        <span className="label" style={{ fontWeight: 'bold' }}>Tổng hóa đơn:</span>
                         <span className="value" style={{ fontWeight: 'bold' }}>
                             {Math.max(0, totalPrice - discountAmount).toLocaleString()} VND
                         </span>
                     </div>
-                    <Button className="button" style={{height: 50, fontSize: 20}} onClick={handlePayment}>Thanh Toán</Button>
+                    <Button className="button" style={{ height: 50, fontSize: 20 }} onClick={handlePayment}>Thanh Toán</Button>
                 </div>
             </div>
         </div >

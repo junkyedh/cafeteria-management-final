@@ -210,205 +210,217 @@ const TableOrder = () => {
     };
 
     return (
-        <div className="table-booking-container">
-            <h2 className='h2 header-custom'>DANH SÁCH BÀN</h2>
-            <div className="action-buttons">
-                <Button onClick={() => handleChooseProduct(null, "Take Away")}>
-                    Mang đi
-                </Button>
-                <Button onClick={() => handleOpenModal()}>
-                    Thêm bàn
-                </Button>
+        <div className="container-fluid m-2">
+            <div className="table-booking-container">
+                <h2 className='h2 header-custom'>DANH SÁCH BÀN</h2>
+                <div className="action-buttons">
+                    <Button onClick={() => handleChooseProduct(null, "Take Away")}>
+                        Mang đi
+                    </Button>
+                    <Button onClick={() => handleOpenModal()}>
+                        Thêm bàn
+                    </Button>
+                    <Modal
+                        title="Thêm Bàn Mới"
+                        visible={isModalVisible}
+                        onCancel={handleCancel}
+                        footer={null}
+                    >
+                        <Form
+                            form={form}
+                            layout="vertical"
+                            onFinish={handleSubmit}
+                        >
+                            <Form.Item
+                                label="Trạng thái"
+                                name="status"
+                                rules={[{ required: true, message: 'Vui lòng chọn trạng thái bàn!' }]}
+                            >
+                                <Select placeholder="Chọn trạng thái">
+                                    <Select.Option value="Available">Có sẵn</Select.Option>
+                                    <Select.Option value="Reserved">Đã đặt</Select.Option>
+                                    <Select.Option value="Occupied">Đang sử dụng</Select.Option>
+                                </Select>
+                            </Form.Item>
+
+                            <Form.Item
+                                label="Số lượng ghế"
+                                name="seat"
+                                rules={[{ required: true, message: 'Vui lòng nhập số lượng ghế!' }]}
+                            >
+                                <Input type="number" min={1} />
+                            </Form.Item>
+
+                            <Form.Item>
+                                <Button type="primary" htmlType="submit" block>
+                                    Thêm bàn
+                                </Button>
+                            </Form.Item>
+                        </Form>
+                    </Modal>
+
+                    {/* Bộ lọc theo số chỗ ngồi */}
+                    <Select
+                        style={{ width: 120, height: 40, marginTop: 5 }}
+                        value={selectedSeats}
+                        onChange={handleFilterChange}
+                        placeholder="Chọn số ghế"
+                    >
+                        <Option value="">Tất cả</Option>
+                        <Option value="2">2 ghế</Option>
+                        <Option value="4">4 ghế</Option>
+                        <Option value="6">6 ghế</Option>
+                        <Option value="8">8 ghế</Option>
+                    </Select>
+                </div>
+
+                <div className="table-list">
+                    {filteredTableList.map((table) => (
+                        <Card
+                            key={table.id}
+                            className={`table-card ${table.status === "Available"
+                                ? "available"
+                                : table.status === "Reserved"
+                                    ? "booked"
+                                    : "in-use"
+                                }`}
+                        >
+                            <div className="table-number">{`#${table.id}`}</div>
+
+                            <div className="info-row">
+                                <span className="key">Trạng thái:</span>
+                                <span className="value">{table.status}</span>
+                            </div>
+                            <div className="info-row">
+                                <span className="key">Số ghế:</span>
+                                <span className="value">{table.seat}</span>
+                            </div>
+                            <div className="info-row">
+                                <span className="key">SĐT:</span>
+                                <span className="value">{table.phoneOrder || "Không có"}</span>
+                            </div>
+
+                            <div className="card-actions">
+                                <Button
+                                    style={{ width: 30, height: 30, padding: 10 }}
+                                    onClick={() => handleEditTable(table.id)}
+                                >
+                                    <i className="fas fa-edit"></i>
+                                </Button>
+                                {table.status === "Available" && (
+                                    <Button type="primary" onClick={() => handleChooseProduct(table, "Dine In")}>
+                                        Chọn món
+                                    </Button>
+                                )}
+                                {table.status === "Occupied" && (
+                                    <Button className="ant-btn-red" onClick={() => handleCompleteTable(table)}>
+                                        Hoàn tất
+                                    </Button>
+                                )}
+                                {table.status === "Reserved" && (
+                                    <Button className="ant-btn-orange" onClick={() => handleChooseProduct(table, "Dine In")}>
+                                        Chọn món
+                                    </Button>
+                                )}
+                                <Button
+                                    style={{ width: 30, height: 30, padding: 10 }}
+                                    danger
+                                    onClick={() => handleDeleteTable(table.id)}
+                                >
+                                    <i className="fas fa-trash"></i>
+                                </Button>
+                            </div>
+                        </Card>
+
+                    ))}
+                </div>
                 <Modal
-                    title="Thêm Bàn Mới"
-                    visible={isModalVisible}
-                    onCancel={handleCancel}
-                    footer={null}
+                    title="Chỉnh sửa thông tin bàn"
+                    visible={isEditModalVisible}
+                    onCancel={() => setIsEditModalVisible(false)}
+                    footer={[
+                        <Button key="cancel" onClick={() => setIsEditModalVisible(false)}>
+                            Hủy
+                        </Button>,
+                        <Button
+                            key="submit"
+                            type="primary"
+                            onClick={() => form.submit()}
+                        >
+                            Lưu
+                        </Button>,
+                    ]}
                 >
                     <Form
                         form={form}
+                        onFinish={(values) => handleSaveTable(editingTable.id, values)}
                         layout="vertical"
-                        onFinish={handleSubmit}
                     >
                         <Form.Item
                             label="Trạng thái"
                             name="status"
-                            rules={[{ required: true, message: 'Vui lòng chọn trạng thái bàn!' }]}
+                            rules={[{ required: true, message: "Vui lòng chọn trạng thái bàn!" }]}
                         >
-                            <Select placeholder="Chọn trạng thái">
-                                <Select.Option value="Available">Có sẵn</Select.Option>
-                                <Select.Option value="Reserved">Đã đặt</Select.Option>
+                            <Select>
+                                <Select.Option value="Available">Trống</Select.Option>
+                                <Select.Option value="Reserved">Đặt trước</Select.Option>
                                 <Select.Option value="Occupied">Đang sử dụng</Select.Option>
                             </Select>
                         </Form.Item>
 
                         <Form.Item
-                            label="Số lượng ghế"
-                            name="seat"
-                            rules={[{ required: true, message: 'Vui lòng nhập số lượng ghế!' }]}
+                            label="Số điện thoại đặt bàn"
+                            name="phoneOrder"
                         >
-                            <Input type="number" min={1} />
+                            <Input placeholder="Nhập số điện thoại" />
                         </Form.Item>
 
-                        <Form.Item>
-                            <Button type="primary" htmlType="submit" block>
-                                Thêm bàn
-                            </Button>
+                        <Form.Item
+                            label="Tên khách hàng"
+                            name="name"
+                        >
+                            <Input placeholder="Nhập tên khách" />
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Thời gian đặt bàn"
+                            name="bookingTime"
+                        >
+                            <Input placeholder="YYYY-MM-DD HH:mm:ss" />
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Thời gian bắt đầu sử dụng"
+                            name="seatingTime"
+                        >
+                            <Input placeholder="YYYY-MM-DD HH:mm:ss" />
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Số ghế"
+                            name="seat"
+                            rules={[{ required: true, message: "Vui lòng nhập số ghế!" }]}
+                        >
+                            <Input type="number" min={1} placeholder="Nhập số ghế" />
                         </Form.Item>
                     </Form>
                 </Modal>
-
-                {/* Bộ lọc theo số chỗ ngồi */}
-                <Select
-                    style={{ width: 120, height: 40 }}
-                    value={selectedSeats}
-                    onChange={handleFilterChange}
-                    placeholder="Chọn số ghế"
+                <Modal
+                    open={openBookingModal}
+                    title={`Đặt bàn #${selectedTable?.id}`}
+                    onCancel={closeBookingModalHandler}
+                    footer={null}
                 >
-                    <Option value="">Tất cả</Option>
-                    <Option value="2">2 ghế</Option>
-                    <Option value="4">4 ghế</Option>
-                    <Option value="6">6 ghế</Option>
-                    <Option value="8">8 ghế</Option>
-                </Select>
-            </div>
-
-            <div className="table-list">
-                {filteredTableList.map((table) => (
-                    <Card
-                        key={table.id}
-                        className={`table-card ${table.status === "Available"
-                            ? "available"
-                            : table.status === "Reserved"
-                                ? "booked"
-                                : "in-use"
-                            }`}
-                    >
-                        <div className="card-actions">
-                            <Button
-                                style={{ width: 25, height: 25, padding: 0 }}
-                                onClick={() => handleEditTable(table.id)}
-                            >
-                                <i className="fas fa-edit"></i>
-                            </Button>
-                            <Button
-                                style={{ width: 25, height: 25, padding: 0 }}
-                                danger
-                                onClick={() => handleDeleteTable(table.id)}
-                            >
-                                <i className="fas fa-trash"></i>
-                            </Button>
-                        </div>
-                        <p className="table-number">{table.id}</p>
-                        <p>Trạng thái: {table.status}</p>
-                        <p>Ghế: {table.seat}</p>
-                        <p>SĐT: {table.phoneOrder}</p>
-                        <Space>
-                            {table.status === "Available" && (
-                                <Button type="primary" onClick={() => handleChooseProduct(table, "Dine In")}>
-                                    Chọn món
-                                </Button>
-                            )}
-                            {table.status === "Occupied" && (
-                                <Button className="ant-btn-red" onClick={() => handleCompleteTable(table)}>
-                                    Hoàn tất
-                                </Button>
-                            )}
-                            {table.status === "Reserved" && (
-                                <Button className="ant-btn-orange" onClick={() => handleChooseProduct(table, "Dine In")}>
-                                    Chọn món
-                                </Button>
-                            )}
-                        </Space>
-                    </Card>
-                ))}
-            </div>
-            <Modal
-                title="Chỉnh sửa thông tin bàn"
-                visible={isEditModalVisible}
-                onCancel={() => setIsEditModalVisible(false)}
-                footer={[
-                    <Button key="cancel" onClick={() => setIsEditModalVisible(false)}>
-                        Hủy
-                    </Button>,
+                    <p>Bạn có muốn đặt bàn này không?</p>
                     <Button
-                        key="submit"
                         type="primary"
-                        onClick={() => form.submit()}
+                        onClick={() => handleBookTable(selectedTable)}
                     >
-                        Lưu
-                    </Button>,
-                ]}
-            >
-                <Form
-                    form={form}
-                    onFinish={(values) => handleSaveTable(editingTable.id, values)}
-                    layout="vertical"
-                >
-                    <Form.Item
-                        label="Trạng thái"
-                        name="status"
-                        rules={[{ required: true, message: "Vui lòng chọn trạng thái bàn!" }]}
-                    >
-                        <Select>
-                            <Select.Option value="Available">Trống</Select.Option>
-                            <Select.Option value="Reserved">Đặt trước</Select.Option>
-                            <Select.Option value="Occupied">Đang sử dụng</Select.Option>
-                        </Select>
-                    </Form.Item>
-
-                    <Form.Item
-                        label="Số điện thoại đặt bàn"
-                        name="phoneOrder"
-                    >
-                        <Input placeholder="Nhập số điện thoại" />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="Tên khách hàng"
-                        name="name"
-                    >
-                        <Input placeholder="Nhập tên khách" />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="Thời gian đặt bàn"
-                        name="bookingTime"
-                    >
-                        <Input placeholder="YYYY-MM-DD HH:mm:ss" />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="Thời gian bắt đầu sử dụng"
-                        name="seatingTime"
-                    >
-                        <Input placeholder="YYYY-MM-DD HH:mm:ss" />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="Số ghế"
-                        name="seat"
-                        rules={[{ required: true, message: "Vui lòng nhập số ghế!" }]}
-                    >
-                        <Input type="number" min={1} placeholder="Nhập số ghế" />
-                    </Form.Item>
-                </Form>
-            </Modal>
-            <Modal
-                open={openBookingModal}
-                title={`Đặt bàn #${selectedTable?.id}`}
-                onCancel={closeBookingModalHandler}
-                footer={null}
-            >
-                <p>Bạn có muốn đặt bàn này không?</p>
-                <Button
-                    type="primary"
-                    onClick={() => handleBookTable(selectedTable)}
-                >
-                    Xác nhận
-                </Button>
-                <Button onClick={closeBookingModalHandler}>Hủy</Button>
-            </Modal>
+                        Xác nhận
+                    </Button>
+                    <Button onClick={closeBookingModalHandler}>Hủy</Button>
+                </Modal>
+            </div>
         </div>
     );
 };

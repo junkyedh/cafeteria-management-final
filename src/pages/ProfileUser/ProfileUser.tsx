@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Form, Button, Card, Accordion, DropdownMenu } from "react-bootstrap";
-import { DatePicker, Spin, message } from "antd";
+import { Container, Row, Col, Form, Button, Card} from "react-bootstrap";
+import moment from "moment";
 import { MainApiRequest } from "@/services/MainApiRequest";
 import "./ProfileUser.scss";
-import imgProfile from '../../assets/profile.jpg';
-import { m } from "framer-motion";
-import moment from "moment";
+import imgProfile from "../../assets/profile.jpg";
+import { message, Spin } from "antd";
 
 const ProfileUser = () => {
   const [loading, setLoading] = useState(false);
@@ -13,16 +12,15 @@ const ProfileUser = () => {
   const [id, setId] = useState<number | null>(null);
   const [name, setName] = useState<string>("");
   const [gender, setGender] = useState<string>("");
-  const [birth, setBirth] = useState<moment.Moment | null>(null); // Sử dụng moment để lưu trữ ngày sinh
+  const [birth, setBirth] = useState<string>(""); // Dùng để lưu ngày sinh
   const [address, setAddress] = useState<string>("");
   const [phone, setPhone] = useState<string>("");
   const [workHours, setWorkHours] = useState<number | null>(null);
   const [minsalary, setMinSalary] = useState<number | null>(null);
   const [typeStaff, setTypeStaff] = useState<string>("");
   const [startDate, setStartDate] = useState<string>("");
-  
 
-   // Lấy thông tin từ /auth/callback và /staff/{id}
+  // Lấy thông tin từ API
   const fetchUserProfile = async () => {
     try {
       const res = await MainApiRequest.get("/auth/callback");
@@ -30,25 +28,23 @@ const ProfileUser = () => {
       setId(data.id);
       setName(data.name);
       setGender(data.gender);
-      setBirth(moment(data.birth)); // Chuyển đổi ngày sinh từ ISO 8601 sang Moment object
+      setBirth(data.birth ? moment(data.birth).format("DD-MM-YYYY") : ""); // Định dạng thành DD-MM-YYYY
       setAddress(data.address);
       setPhone(data.phone);
       setWorkHours(data.workHours);
       setMinSalary(data.minsalary);
       setTypeStaff(data.typeStaff);
       setStartDate(data.startDate);
-
-      console.log("Thông tin tài khoản:", data);
     } catch (error) {
       console.error("Lỗi khi lấy thông tin tài khoản:", error);
     }
-  }
-    useEffect(() => {
-      fetchUserProfile();
-    }, []);
-  
+  };
 
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
 
+  // Xử lý cập nhật thông tin
   const handleUpdateProfile = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -56,13 +52,14 @@ const ProfileUser = () => {
     const updateData = {
       name,
       gender,
-      birth: birth ? birth.format("YYYY-MM-DD") : "", // Chuyển ngày sinh sang định dạng YYYY-MM-DD khi gửi API
+      birth: moment(birth, "DD-MM-YYYY").format("YYYY-MM-DD"), // Định dạng lại trước khi gửi API
       address,
       phone,
       workHours,
       typeStaff,
       minsalary,
     };
+
     try {
       await MainApiRequest.put(`/staff/${id}`, updateData);
       message.success("Cập nhật thông tin thành công");
@@ -76,15 +73,11 @@ const ProfileUser = () => {
 
   return (
     <div className="container-fluid m-2">
-      <h2 className='h2 header-custom'>THÔNG TIN CỦA TÔI</h2>
+      <h2 className="h2 header-custom">THÔNG TIN CỦA TÔI</h2>
       <Container fluid className="profile-container">
         <Row className="profile-content">
           <Col md={4} className="profile-sidebar text-center">
-            <img
-              src= {imgProfile}
-              alt="Avatar"
-              className="profile-avatar"
-            />
+            <img src={imgProfile} alt="Avatar" className="profile-avatar" />
             <h4>{name || "Họ và tên"}</h4>
             <p>{typeStaff || "Loại nhân viên"}</p>
           </Col>
@@ -93,7 +86,7 @@ const ProfileUser = () => {
               <Card.Body>
                 <Spin spinning={loading}>
                   <Form onSubmit={handleUpdateProfile}>
-                    <Row  style={{display:"flex", justifyContent:"space-around" }}>
+                    <Row style={{ display: "flex", justifyContent: "space-around" }}>
                       <Col md={6}>
                         <Form.Group controlId="name" className="mb-3">
                           <Form.Label>Tên</Form.Label>
@@ -106,11 +99,11 @@ const ProfileUser = () => {
                         </Form.Group>
                         <Form.Group controlId="birth" className="mb-3">
                           <Form.Label>Ngày sinh</Form.Label>
-                          <DatePicker
-                            value={birth} // Giới thiệu DatePicker từ antd
-                            format="DD-MM-YYYY" // Hiển thị định dạng DD-MM-YYYY
-                            onChange={(date) => setBirth(date)} // Cập nhật giá trị khi người dùng chọn ngày
-                            style={{ width: "100%" }}
+                          <Form.Control
+                            type="text" // Sử dụng text để cho phép định dạng DD-MM-YYYY
+                            placeholder="DD-MM-YYYY"
+                            value={birth}
+                            onChange={(e) => setBirth(e.target.value)} // Không thay đổi format
                           />
                         </Form.Group>
                         <Form.Group controlId="address" className="mb-3">
@@ -125,7 +118,7 @@ const ProfileUser = () => {
                         <Form.Group controlId="minSalary" className="mb-3">
                           <Form.Label>Lương cơ bản</Form.Label>
                           <Form.Control
-                          disabled
+                            disabled
                             type="number"
                             placeholder="Lương cơ bản"
                             value={minsalary ?? ""}
@@ -134,19 +127,19 @@ const ProfileUser = () => {
                         </Form.Group>
                       </Col>
                       <Col md={6}>
-                      <Form.Group controlId="gender" className="mb-3">
-                        <Form.Label>Giới tính</Form.Label>
-                        <Form.Control
-                          as="select"
-                          value={gender}
-                          onChange={(e) => setGender(e.target.value)}
-                        >
-                          <option value="">Chọn giới tính</option>
-                          <option value="Nam">Nam</option>
-                          <option value="Nữ">Nữ</option>
-                          <option value="Khác">Khác</option>
-                        </Form.Control>
-                      </Form.Group>
+                        <Form.Group controlId="gender" className="mb-3">
+                          <Form.Label>Giới tính</Form.Label>
+                          <Form.Control
+                            as="select"
+                            value={gender}
+                            onChange={(e) => setGender(e.target.value)}
+                          >
+                            <option value="">Chọn giới tính</option>
+                            <option value="Nam">Nam</option>
+                            <option value="Nữ">Nữ</option>
+                            <option value="Khác">Khác</option>
+                          </Form.Control>
+                        </Form.Group>
                         <Form.Group controlId="phone" className="mb-3">
                           <Form.Label>Số điện thoại</Form.Label>
                           <Form.Control
@@ -174,15 +167,20 @@ const ProfileUser = () => {
                             onChange={(e) => setWorkHours(e.target.value ? parseInt(e.target.value) : null)}
                           />
                         </Form.Group>
-
                       </Col>
-                      <Button 
-                          type="submit" 
-                          variant="primary" 
-                          className="mt-3 p-3"
-                          style={{ width: "40%", display:"flex", justifyContent:"space-around", fontWeight:"700", fontSize:"1rem" }}
-                        >
-                          {loading ? "Đang cập nhật..." : "Cập nhật thông tin"}
+                      <Button
+                        type="submit"
+                        variant="primary"
+                        className="mt-3 p-3"
+                        style={{
+                          width: "40%",
+                          display: "flex",
+                          justifyContent: "space-around",
+                          fontWeight: "700",
+                          fontSize: "1rem",
+                        }}
+                      >
+                        {loading ? "Đang cập nhật..." : "Cập nhật thông tin"}
                       </Button>
                     </Row>
                   </Form>
@@ -197,5 +195,3 @@ const ProfileUser = () => {
 };
 
 export default ProfileUser;
-
-

@@ -38,8 +38,8 @@ const Revenue30Days = ({ data }: { data: any }) => {
                 {
                     label: 'Doanh thu hàng ngày',
                     data: values,
-                    backgroundColor: 'rgba(153, 102, 255, 0.6)',
-                    borderColor: 'rgba(153, 102, 255, 1)',
+                    backgroundColor: 'rgba(255, 111, 97, 100)',
+                    borderColor: 'rgba(255, 111, 97, 100)',
                     fill: false,
                     tension: 0.1,
                 }

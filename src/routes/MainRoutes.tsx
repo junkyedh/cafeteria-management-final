@@ -20,7 +20,6 @@ import { routePath } from "@/layouts/Navbar/Navbar";
 import Login from "@/pages/Login/Login";
 
 export default function MainRoutes() {
-
   const navigate = useNavigate();
   const context = useSystemContext();
   const { isLoggedIn } = context;

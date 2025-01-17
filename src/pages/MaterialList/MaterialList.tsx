@@ -11,73 +11,96 @@ const MaterialList = () => {
     const [editingMaterial, setEditingMaterial] = useState<any | null>(null);
 
     const fetchMaterialList = async () => {
-        try {
-            const res = await MainApiRequest.get('/material/list');
-            setMaterialList(res.data);
-            console.log(res.data);
-        } catch (error) {
-            console.error('Error fetching material list:', error);
-            message.error('Failed to fetch material list. Please try again.');
-        }
-    };
+        const res = await MainApiRequest.get('/material/list');
+        setMaterialList(res.data);
+    }
 
     useEffect(() => {
         fetchMaterialList();
     }, []);
 
     const onOpenCreateMaterialModal = (record: any = null) => {
+        setEditingMaterial(record); // Gán record vào trạng thái đang chỉnh sửa
         if (record) {
-            setEditingMaterial(record); // Gán record vào trạng thái đang chỉnh sửa
             form.setFieldsValue({
                 ...record,
+                price: record.price.toFixed(0),
                 importDate: moment(record.importDate), 
                 expiryDate: moment(record.expiryDate), 
             });
-        } else {
-            setEditingMaterial(null); // Không có bản ghi => Thêm mới
-            form.resetFields(); // Reset form khi thêm mới
         }
         setOpenCreateMaterialModal(true);
     };
 
 
     const onOKCreateMaterial = async () => {
-        const data = form.getFieldsValue();
-        data.importDate = data.importDate ? data.importDate.format('YYYY-MM-DD') : null;
-        data.expiryDate = data.expiryDate ? data.expiryDate.format('YYYY-MM-DD') : null;
+        try {
+            const data = form.getFieldsValue();
+            if (data.importDate) {
+                data.importDate = data.importDate.toISOString();
+            } else {
+                message.error('Vui lòng chọn ngày nhập!');
+                return;
+            }
+            if (data.expiryDate) {
+                data.expiryDate = data.expiryDate.toISOString();
+            } else {
+                message.error('Vui lòng chọn ngày hết hạn!');
+                return;
+            }
 
-        if (editingMaterial) {
-            await MainApiRequest.put(`/material/${editingMaterial.id}`, data);
-        } else {
-            await MainApiRequest.post('/material', data);
+            if (editingMaterial) {
+                const { id, ...rest } = data;
+                await MainApiRequest.put(`/material/${editingMaterial.id}`, rest);
+            } else {
+                await MainApiRequest.post('/material', data);
+            }
+
+            fetchMaterialList();
+            setOpenCreateMaterialModal(false);
+            form.resetFields();
+            message.success('Nguyên liệu đã được lưu thành công!');
+            setEditingMaterial(null);
+
+        } catch (error) {
+            console.error('Lỗi khi tạo nguyên liệu:', error);
+            message.error('Không thể tạo nguyên liệu. Vui lòng thử lại.');
         }
-        fetchMaterialList(); // Tải lại danh sách nguyên liệu
-        setOpenCreateMaterialModal(false); // Đóng modal
-        form.resetFields(); // Reset form
-        setEditingMaterial(null); // Xóa trạng thái chỉnh sửa
-    };
+    }
 
     const onCancelCreateMaterial = () => {
         setOpenCreateMaterialModal(false);
-        if (!editingMaterial) {
-            form.resetFields(); // Chỉ reset form nếu là chế độ "Thêm mới"
-        }
+        form.resetFields();
     };
+
+    const onOpenEditMaterial = (record: any) => {
+        setEditingMaterial(record);
+        form.setFieldsValue({
+            ...record,
+            importDate: moment(record.importDate), 
+            expiryDate: moment(record.expiryDate), 
+        });
+        setOpenCreateMaterialModal(true);
+    }
 
     const onDeleteMaterial = async (id: number) => {
         try {
             await MainApiRequest.delete(`/material/${id}`);
             fetchMaterialList();
+            message.success('Nguyên liệu đã được xóa thành công!');
         } catch (error) {
-            console.error('Error deleting material:', error);
-            message.error('Failed to delete material. Please try again.');
+            console.error('Lỗi khi xóa nguyên liệu:', error);
+            message.error('Không thể xóa nguyên liệu. Vui lòng thử lại.');
         }
     };
 
     return (
         <div className="container-fluid m-2">
             <h2 className='h2 header-custom'>DANH SÁCH NGUYÊN LIỆU</h2>
-            <Button type='primary' onClick={onOpenCreateMaterialModal}>
+            <Button 
+                type='primary' 
+                onClick={() => onOpenCreateMaterialModal()}
+            >
                 Thêm mới nguyên liệu
             </Button>
 
@@ -85,8 +108,8 @@ const MaterialList = () => {
                 className='material-modal'
                 title={editingMaterial ? "Chỉnh sửa" : "Thêm mới"}
                 open={openCreateMaterialModal}
-                onOk={onOKCreateMaterial}
-                onCancel={onCancelCreateMaterial}
+                onOk={() => onOKCreateMaterial()}
+                onCancel = {() => onCancelCreateMaterial()}
             >
                 <Form form={form} layout="vertical">
                         <Form.Item
@@ -118,7 +141,7 @@ const MaterialList = () => {
                             name="price"
                             rules={[{ required: true, message: "Please input price!" }]}
                         >   
-                            <Input type="text" />
+                            <Input type="number" />
                         </Form.Item>
                         <Form.Item
                             label="Loại bảo quản"
@@ -126,8 +149,8 @@ const MaterialList = () => {
                             rules={[{ required: true, message: "Please input storage type!" }]}
                         >
                             <Select>
-                                <Select.Option value="1">Cấp đông</Select.Option>
-                                <Select.Option value="2">Để ngoài</Select.Option>
+                                <Select.Option value="Cấp đông">Cấp đông</Select.Option>
+                                <Select.Option value="Để ngoài">Để ngoài</Select.Option>
                             </Select>
                         </Form.Item>
                     </div>
@@ -137,14 +160,14 @@ const MaterialList = () => {
                             name="importDate"
                             rules={[{ required: true, message: "Please input import date!" }]}
                         >
-                            <DatePicker format="DD-MM-YYYY"/>
+                            <DatePicker showTime/>
                         </Form.Item>
                         <Form.Item
                             label="Ngày hết hạn"
                             name="expiryDate"
                             rules={[{ required: true, message: "Please input expiration date!" }]}
                         >
-                            <DatePicker format="DD-MM-YYYY"/>
+                            <DatePicker showTime/>
                         </Form.Item>
                     </div>
                 </Form>
@@ -162,25 +185,21 @@ const MaterialList = () => {
                     { title: 'Số lượng nhập', dataIndex: 'quantityImported', key: 'quantityImported' },
                     { title: 'Số lượng tồn', dataIndex: 'quantityStock', key: 'quantityStock' },
                     { title: 'Giá', dataIndex: 'price', key: 'price',
-                        // const formatCurrency = (value: number) =>
-                        //     new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
-                        //     .format(value)
-                        //     .replace('₫', 'đ'); // Thay đổi ký hiệu để phù hợp với VNĐ
                         render: (price: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)
                      },
                     { title: 'Loại bảo quản', dataIndex: 'storageType', key: 'storageType' },
                     { title: 'Ngày nhập', dataIndex: 'importDate', key: 'importDate',
-                        render: (importDate: string) => (importDate ? moment(importDate).format('DD-MM-YYYY') : '-')
+                        render: (importDate: string) => moment(importDate).format('YYYY-MM-DD HH:mm:ss')
                      },
                     { title: 'Ngày hết hạn', dataIndex: 'expiryDate', key: 'expiryDate',
-                        render: (expiryDate: string) => (expiryDate ? moment(expiryDate).format('DD-MM-YYYY') : '-')
+                        render: (expiryDate: string) => moment(expiryDate).format('YYYY-MM-DD HH:mm:ss'),
                      },
                     {
                         title: 'Hành động',
                         key: 'actions',
                         render: (_, record) => (
                             <Space size="middle">
-                                <Button type="default" onClick={() =>  onOpenCreateMaterialModal(record)}>
+                                <Button onClick={() => onOpenEditMaterial(record)}>
                                     <i className="fas fa-edit"></i>
                                 </Button>
                                 <Popconfirm
@@ -189,7 +208,7 @@ const MaterialList = () => {
                                     okText="Có"
                                     cancelText="Không"
                                 >
-                                    <Button onClick={() => onDeleteMaterial(record.id)} danger>
+                                    <Button danger>
                                         <i className="fas fa-trash"></i>
                                     </Button>
                                 </Popconfirm>

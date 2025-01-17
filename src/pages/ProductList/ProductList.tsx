@@ -138,7 +138,7 @@ const ProductList = () => {
   const onToggleProductStatus = async (record: any) => {
     try {
       const updatedProduct = { ...record, available: !record.available };
-      await MainApiRequest.put(`/product/${record.id}`, updatedProduct);
+      await MainApiRequest.put(`/product/available/${record.id}`, updatedProduct);
   
       // Cập nhật danh sách sản phẩm sau khi thay đổi
       setProductList((prevList) =>

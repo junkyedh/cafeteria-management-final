@@ -29,7 +29,7 @@
 
 .menu-right {
     flex: 1;
-    padding: 20px;
+    padding: 20px 10px;
     max-width: 400px;
     height: 100vh;
     overflow-y: auto;
@@ -49,23 +49,75 @@
     background-color: #f0f4f8;
 }
 
-// .category-filter {
-//     margin-bottom: 20px;
-//     display: flex;
-//     justify-content: space-around;
-// }
 
 .category-filter {
-    display: flex; /* Hiển thị các phần tử con theo hàng ngang */
-    gap: 3px; /* Khoảng cách giữa các nút */
-    flex-wrap: wrap; /* Đảm bảo nút không tràn khi màn hình nhỏ */
-    //margin-top: 10px; /* Khoảng cách giữa bộ lọc và phần tử phía trên (nếu cần) */
-    margin-bottom: 10px;
-    justify-content: center;
+    display: flex;
+    justify-content: center; /* Căn giữa các nút */
+    padding: 10px 0; /* Khoảng cách giữa các nút */
+    gap: 10px; /* Khoảng cách giữa các nút */
+    flex-wrap: wrap; /* Đảm bảo các nút không tràn khi màn hình nhỏ */
+    margin-bottom: 20px; /* Khoảng cách phía dưới */
+
+    .ant-btn {
+        border-radius: 20px !important; /* Bo góc cho các nút */
+        border: 1px solid #2f4156 !important; /* Đường viền cho nút */
+        font-size: 16px; /* Tăng kích thước font */
+        font-weight: bold; /* Chữ in đậm */
+        padding: 20px 25px; /* Tăng kích thước nút */
+        transition: all 0.3s ease; /* Hiệu ứng hover */
+
+        &:hover {
+            background-color: get-color($primary, "200") !important; /* Màu nền khi hover */
+            color: white !important; /* Màu chữ khi hover */
+        }
+
+        &:active {
+            background-color: get-color($primary, "100") !important; /* Màu nền khi click */
+            color: white !important; /* Màu chữ khi click */
+        }
+    }
+
+    // .ant-btn-primary {
+    //     background-color: get-color($primary, "100"); /* Màu nền chính */
+    //     color: #fff; /* Màu chữ trắng */
+    //     border: none;
+
+    //     &:hover {
+    //         background-color: get-color($background, "100") !important; /* Màu nền khi hover */
+    //         color: get-color($primary, "100") !important; /* Màu chữ khi hover */
+    //     }
+    //     &:active {
+    //         background-color: get-color($primary, "100") !important; /* Màu nền khi click */
+    //         color: white !important; /* Màu chữ khi click */
+    //     }
+    // }
+
+    // .ant-btn-default {
+    //     background-color: get-color($primary, "100"); /* Màu nền chính */
+    //     color: #fff; /* Màu chữ trắng */
+    //     border: none;
+
+    //     &:hover {
+    //         background-color: get-color($secondary, "100");
+    //         color: #fff;
+    //     }
+    // }
 }
 
+
 .search-input {
-    margin-bottom: 20px;
+    width: 50%; // Làm khung tìm kiếm lớn hơn
+    margin: 20px auto; // Căn giữa
+    display: block;
+    font-size: 16px; // Tăng kích thước chữ
+    padding: 10px; // Tăng padding cho khung input
+    border-radius: 20px; // Bo góc khung input
+    color: get-color($primary, "100") !important; // Màu chữ
+    border: 1px solid #2f4156; // Đường viền
+
+    &:focus {
+        border-color: get-color($primary, "200"); // Đổi màu viền khi focus
+    }
 }
 
 .product-cards {
@@ -82,7 +134,7 @@
     display: flex;
     width: 48%; // Card chiếm 48% chiều rộng màn hình
     max-width: 48%;
-    height: 180px; // Cố định chiều cao của card
+    height: 200px; // Cố định chiều cao của card
     background-color: #f0f4f8;
     border: 1px solid #e0e0e0;
     border-radius: 10px;
@@ -90,13 +142,12 @@
 
 
     .product-card h3 {
-        font-weight: bold; // Đảm bảo chữ in đậm
-        font-size: 16px; // Có thể tùy chỉnh kích thước
-        margin: 10px 0; // Khoảng cách trên và dưới
+        font-weight: bolder; // Đảm bảo chữ in đậm
+        font-size: 20px; // Có thể tùy chỉnh kích thước
     }
 
     .product-image {
-        width: 130px; // Phần hình ảnh chiếm 40% chiều ngang card
+        width: 150px; // Phần hình ảnh chiếm 40% chiều ngang card
         height: 130px; // Chiều cao đầy đủ của card
         background-color: #f0f0f0;
         left: 0px;
@@ -108,17 +159,14 @@
         }
     }
 
-    //   .product-image {
-    //     width: 100%;
-    //     height: auto;
-    //   }
     .product-info {
         width: 60%; // Phần thông tin chiếm 60% còn lại
         right: 0px;
-        padding-left: 15px;
+        padding-left: 20px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+
     }
 
     .size-options,
@@ -127,8 +175,8 @@
         display: flex;
         justify-content: center;
         align-items: center;
+        padding: 5px;
         gap: 10px;
-        /* Ensures buttons are spaced evenly */
         padding-left: 10px;
     }
 
@@ -145,10 +193,27 @@
         cursor: pointer;
     }
 
+    .price {
+        display: flex; /* Sử dụng flex để bố trí key và value */
+        justify-content: space-between; /* Tạo khoảng cách giữa key và value */
+        align-items: center; /* Căn giữa theo chiều dọc */
+        font-size: 16px; /* Tăng kích thước font */
+        font-weight: 500; /* Đậm vừa phải */
+        gap: 20px; /* Khoảng cách giữa key và value */
+        margin-top: -5px;
+        
+    
+        span:last-child {
+            font-size: larger;
+            font-weight: bold; /* Chữ đậm hơn cho value */
+            color: get-color($primary, "100"); /* Màu nổi bật cho giá */
+        }
+    }
+    
     .mood-button {
         width: 45px;
         height: 25px;
-        border-radius: 20%;
+        border-radius: 10%;
         /* Make buttons circular */
         display: flex;
         align-items: center;
@@ -165,18 +230,23 @@
     }
 
     .select-button {
-        width: 60px;
-        margin-top: 5px;
+        width: 80px;
+        height: 40px;
+        margin: -5px 0 10px 0;
+        
         background-color: #2f4156;
         color: white;
         font-weight: bold;
+        border-radius: 20px;
         position: absolute;
-        right: 25px;
+        right: 30px;
         border: 2px;
+
         &:hover {
-            background-color: #d0e8ff;
+            cursor: pointer;
+            background-color: get-color($primary, "200");
             border-color: #2f4156;
-            color: #333;
+            color: white;
         }
     }
 }
@@ -227,13 +297,10 @@
     z-index: 10;
 
     .total-info-item {
+        margin: 0 0px 10px 10px;
         display: flex;
         justify-content: space-between;
-        /* Đẩy label và value về hai phía */
-        width: 100%;
-        /* Đảm bảo mục chiếm toàn bộ chiều ngang */
-        margin-bottom: 10px;
-        /* Khoảng cách giữa các dòng */
+        width: 95%;
     }
 
     .label {
@@ -327,4 +394,10 @@
 .category-filter .ant-btn-primary {
     background-color: #C8D9E6; // Màu nền của nút khi được chọn
     color: #2f4156;
+}
+.pagination {
+    display: flex;
+    justify-content: center; // Căn giữa pagination
+    margin: 20px 0;
+    border: #2f4156;
 }

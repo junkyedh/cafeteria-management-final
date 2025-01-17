@@ -46,6 +46,8 @@ const StaffList = () => {
             data.roleid = 2;
             data.password = editingStaff ? editingStaff.password : "default123";
 
+            console.log('Dữ liệu gửi:', data);
+
             if (editingStaff) {
                 const {...rest } = data;
                 await MainApiRequest.put(`/staff/${editingStaff.id}`, rest);
@@ -191,8 +193,8 @@ const StaffList = () => {
                             name="password"
                             rules={[{ required: true, message: "Please input password!" }]}
                         >
-                            <Input.Password/>
-                        </Form.Item >
+                            <Input.Password disabled={!!editingStaff} />
+                        </Form.Item>
                     
                     <Form.Item
                         label="Địa chỉ"

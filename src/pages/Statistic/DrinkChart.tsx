@@ -61,36 +61,6 @@ const DrinkChart = ({ data }: { data: any }) => {
     }, [data]);
 
     return (
-        // <div className="chart">
-        //     {chartData ? (
-        //         <Bar
-        //             data={chartData}
-        //             options={{
-        //                 responsive: true,
-        //                 plugins: {
-        //                     legend: {
-        //                         position: 'top',
-        //                     },
-        //                     title: {
-        //                         display: true,
-        //                         text: 'Thống kê số lượng bán ra của các loại sản phẩm'
-        //                     }
-        //                 },
-        //                 scales: {
-        //                     x: {
-        //                         beginAtZero: true
-        //                     },
-        //                     y: {
-        //                         beginAtZero: true
-        //                     }
-        //                 }
-        //             }}
-        //         />
-        //     ) : (
-        //         <p>Loading...</p>
-        //     )}
-        // </div>
-
         <div className='chart'>
             {chartData ? (
                 <Doughnut

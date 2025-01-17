@@ -35,8 +35,8 @@ const OrdersChart30 = ({ data }: { data: any }) => {
                     {
                         label: 'Số lượng',
                         data: values,
-                        backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(184, 113, 249, 0.6)',
+                        borderColor: 'rgba(203, 154, 249, 0.6)',
                         borderWidth: 1
                     }
                 ]

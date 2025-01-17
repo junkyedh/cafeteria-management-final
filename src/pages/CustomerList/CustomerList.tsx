@@ -18,8 +18,8 @@ const CustomerList = () => {
             const res = await MainApiRequest.get('/customer/list');
             setCustomerList(res.data);
         } catch (error) {
-            console.error('Error fetching customer list:', error);
-            message.error('Failed to fetch customer list. Please try again.');
+            console.error('Lỗi khi lấy danh sách khách hàng:', error);
+            message.error('Không thể lấy danh sách khách hàng. Vui lòng thử lại.');
         }
     };
 
@@ -29,8 +29,8 @@ const CustomerList = () => {
             setMembershipList(res.data);
             console.log(res.data);
         } catch (error) {
-            console.error('Error fetching membership list:', error);
-            message.error('Failed to fetch membership list. Please try again.');
+            console.error('Lỗi khi lấy danh sách membership:', error);
+            message.error('Không thể lấy danh sách membership. Vui lòng thử lại.');
         }
     }
 
@@ -65,13 +65,12 @@ const CustomerList = () => {
     const onOKCreateCustomer = async () => {
         try {
             const data = form.getFieldsValue();
-            data.registrationDate = data.registrationDate ? moment(data.registrationdate).format('YYYY-MM-DD HH:mm:ss'): null;
+            data.registrationDate = data.registrationDate.toISOString();
+
             if (editingCustomer) {
-                const { total, rank, ...rest } = data;
-                await MainApiRequest.put(`/customer/${editingCustomer.id}`, data);
+                const { id, ...rest } = data;
+                await MainApiRequest.put(`/customer/${editingCustomer.id}`, rest);
             } else {
-                data.total = 0;
-                data.rank = 'Thường';
                 await MainApiRequest.post('/customer', data);
             }
 
@@ -80,8 +79,8 @@ const CustomerList = () => {
             form.resetFields();
             setEditingCustomer(null);
         } catch (error) {
-            console.error('Error creating/updating customer:', error);
-            message.error('Failed to save customer. Please try again.');
+            console.error('Lỗi khi tạo khách hàng:', error);
+            message.error('Không thể tạo khách hàng. Vui lòng thử lại.');
         }
     };
 
@@ -100,8 +99,8 @@ const CustomerList = () => {
             form.resetFields();
             setEditingMembership(null);
         } catch (error) {
-            console.error('Error creating/updating membership:', error);
-            message.error('Failed to save membership. Please try again.');
+            console.error('Lỗi khi tạo membership:', error);
+            message.error('Không thể tạo membership. Vui lòng thử lại.');   
         }
     };
 
@@ -135,11 +134,11 @@ const CustomerList = () => {
     const onDeleteCustomer = async (id: number) => {
         try {
             await MainApiRequest.delete(`/customer/${id}`);
-            console.log('Deleting customer with ID:', id);
             fetchCustomerList();
+            message.success('Xóa khách hàng thành công!');
         } catch (error) {
-            console.error('Error deleting customer:', error);
-            message.error('Failed to delete customer. Please try again.');
+            console.error('Lỗi khi xóa khách hàng:', error);
+            message.error('Không thể xóa khách hàng. Vui lòng thử lại.');
         }
     };
 
@@ -147,16 +146,20 @@ const CustomerList = () => {
         try {
             await MainApiRequest.delete(`/membership/${id}`);
             fetchMembershipList();
+            message.success('Xóa membership thành công!');
         } catch (error) {
-            console.error('Error deleting membership:', error);
-            message.error('Failed to delete membership. Please try again.');
+            console.error('Lỗi khi xóa membership:', error);
+            message.error('Không thể xóa membership. Vui lòng thử lại.');
         }
     }
 
     return (
         <div className="container-fluid m-2">
             <h2 className='h2 header-custom'>DANH SÁCH KHÁCH HÀNG</h2>
-            <Button type='primary' onClick={onOpenCreateCustomerModal}>
+            <Button 
+                type='primary' 
+                onClick={() => onOpenCreateCustomerModal()}
+            >
                 Thêm mới khách hàng
             </Button>
 
@@ -199,22 +202,21 @@ const CustomerList = () => {
                         <Form.Item
                         label="Ngày đăng ký"
                         name="registrationDate"
+                        rules={[{ required: true, message: "Vui lòng chọn ngày đăng ký!" }]}
                     >
-                        <DatePicker  showTime/>
+                        <DatePicker showTime/>
                     </Form.Item>
                     </div>
                     <div className="field-row">
                         <Form.Item
                             label="Tổng mức chi tiêu"
                             name="total"
-                            rules={[{ required: false, message: "Vui lòng nhập hạn mức chi tiêu!" }]}
                         >
                             <Input type="number"  disabled/>
                         </Form.Item>
                         <Form.Item
                             label="Hạng thành viên"
                             name="rank"
-                            rules={[{ required: false, message: "Vui lòng chọn rank!" }]}
                         >
                             <Select  disabled>
                                 {membershipList.map((membership) => (
@@ -278,7 +280,7 @@ const CustomerList = () => {
             <Button
                 type='primary'
                 className='mt-4'
-                onClick={onOpenCreateMembershipModal}
+                onClick={() => onOpenCreateMembershipModal()}
             >
                 Thêm Membership
             </Button>
@@ -287,8 +289,8 @@ const CustomerList = () => {
                 className='customer-modal'
                 title={editingMembership ? "Chỉnh sửa" : "Thêm mới"}
                 open={openCreateMembershipModal}
-                onOk={onOkCreateMembership}
-                onCancel={onCancelCreateMembership}
+                onOk={() => onOkCreateMembership()}
+                onCancel={() => onCancelCreateMembership()}
             >
                 <Form form={form} layout="vertical">
                     <Form.Item
