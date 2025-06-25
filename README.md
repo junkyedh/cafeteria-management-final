@@ -67,7 +67,3 @@ To contribute:
 ## License
 
 This project is for educational purposes.
-
----
-
-*Feel free to add screenshots or demo images below to showcase the application!*
